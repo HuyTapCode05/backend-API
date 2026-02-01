@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 import { getDB } from '../../config/database.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 import { verifyToken } from '../Auth/middleware.js';
-import { isValidRoomId, validateText, sanitizeString, whitelistObject } from '../utils/validation.js';
+import { isValidRoomId, isValidObjectId, validateText, sanitizeString, whitelistObject } from '../utils/validation.js';
 import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
