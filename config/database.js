@@ -31,8 +31,27 @@ async function createIndexes() {
     // Messages indexes
     try {
       await db.collection('messages').createIndex({ roomId: 1, createdAt: -1 });
+      await db.collection('messages').createIndex({ userId: 1, createdAt: -1 });
     } catch (e) {
       // Index may already exist
+    }
+
+    // Full-text search index for messages
+    try {
+      const existingIndexes = await db.collection('messages').indexes();
+      const textIndex = existingIndexes.find(idx => idx.textIndexVersion);
+      
+      if (!textIndex) {
+        await db.collection('messages').createIndex(
+          { text: 'text', username: 'text' },
+          { name: 'messages_text_index', default_language: 'none' }
+        );
+        console.log('✅ Created full-text search index for messages');
+      }
+    } catch (e) {
+      if (!e.message.includes('already exists') && !e.message.includes('Index already exists')) {
+        console.warn('Warning creating text index:', e.message);
+      }
     }
 
     // Rooms indexes

@@ -4,12 +4,14 @@ import uploadRoutes from './upload.js';
 import sendRoutes from './send.js';
 import getRoutes from './get.js';
 import updateRoutes from './update.js';
+import searchRoutes from './search.js';
 
 const router = express.Router();
 
 // Mount all message routes
 router.use('/', uploadRoutes);  // POST /upload
 router.use('/', sendRoutes);    // POST /send
+router.use('/', searchRoutes);  // GET /search, GET /search/advanced
 router.use('/', getRoutes);     // GET /:roomId
 router.use('/', updateRoutes);  // PUT /:messageId, DELETE /:messageId
 

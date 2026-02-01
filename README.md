@@ -240,6 +240,52 @@ GET /api/message/:roomId?limit=50&skip=0&before=2024-01-01T00:00:00.000Z
 Authorization: Bearer {accessToken}
 ```
 
+#### Search Messages (Full-text Search)
+```http
+GET /api/message/search?q=hello&roomId=general&limit=50&skip=0&sort=relevance
+Authorization: Bearer {accessToken}
+```
+
+Query Parameters:
+- `q` (required): Search query (minimum 2 characters)
+- `roomId` (optional): Filter by room ID
+- `userId` (optional): Filter by user ID
+- `limit` (optional): Number of results (default: 50, max: 100)
+- `skip` (optional): Pagination offset (default: 0)
+- `sort` (optional): Sort order - `relevance` (default), `date`, `date_asc`
+
+Response:
+```json
+{
+  "success": true,
+  "data": {
+    "messages": [...],
+    "total": 150,
+    "returned": 50,
+    "hasMore": true,
+    "query": "hello",
+    "filters": {
+      "roomId": "general",
+      "userId": null
+    }
+  },
+  "message": "Search completed successfully"
+}
+```
+
+#### Advanced Search Messages
+```http
+GET /api/message/search/advanced?q=hello&roomId=general&messageType=text&fileType=chat&source=app&dateFrom=2024-01-01&dateTo=2024-12-31&limit=50&skip=0&sort=relevance
+Authorization: Bearer {accessToken}
+```
+
+Additional Query Parameters:
+- `messageType` (optional): Filter by message type (`text`, `file`, `image`, `video`, `voice`, `sticker`)
+- `fileType` (optional): Filter by file type (`chat`, `avatar`, `sticker`, `video`, `voice`, `emg`)
+- `source` (optional): Filter by source (`app`, `web`, `api`)
+- `dateFrom` (optional): Start date (ISO 8601 format)
+- `dateTo` (optional): End date (ISO 8601 format)
+
 #### Update Message
 ```http
 PUT /api/message/:messageId
