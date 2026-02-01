@@ -70,7 +70,10 @@ app.get('/api', (req, res) => {
         getUser: 'GET /api/users/:userId',
         updateProfile: 'PUT /api/users/me',
         uploadAvatar: 'POST /api/users/me/avatar',
-        search: 'GET /api/users/search/:query'
+        search: 'GET /api/users/search/:query',
+        updateStatus: 'PUT /api/users/status',
+        getUserStatus: 'GET /api/users/:userId/status',
+        getFriendsStatus: 'GET /api/users/friends/status'
       },
       message: {
         upload: 'POST /api/message/upload',
