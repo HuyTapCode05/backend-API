@@ -110,6 +110,12 @@ app.get('/api', (req, res) => {
         add: 'POST /api/message/:messageId/reaction',
         remove: 'DELETE /api/message/:messageId/reaction',
         get: 'GET /api/message/:messageId/reactions'
+      },
+      readReceipts: {
+        markRead: 'POST /api/message/:messageId/read',
+        markAllRead: 'POST /api/message/room/:roomId/read-all',
+        getReadStatus: 'GET /api/message/:messageId/read-status',
+        getUnreadCount: 'GET /api/message/room/:roomId/unread-count'
       }
     }
   });

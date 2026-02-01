@@ -60,19 +60,31 @@ router.get('/:roomId', verifyToken, getMessagesLimiter, async (req, res) => {
       };
     });
 
+    const messageIds = messages.map(m => m._id.toString());
+    const readReceipts = await db.collection('read_receipts')
+      .find({
+        messageId: { $in: messageIds },
+        userId: req.userId
+      })
+      .toArray();
+
+    const readMessageIds = new Set(readReceipts.map(r => r.messageId));
+
     const enrichedMessages = messages.map(msg => ({
       ...msg,
       user: userMap[msg.userId] || {
         userId: msg.userId,
         username: msg.username,
         avatar: msg.userAvatar
-      }
+      },
+      isRead: readMessageIds.has(msg._id.toString())
     }));
 
     return sendSuccess(res, {
       messages: enrichedMessages,
       total: enrichedMessages.length,
-      hasMore: enrichedMessages.length === parseInt(limit)
+      hasMore: enrichedMessages.length === parseInt(limit),
+      unreadCount: enrichedMessages.filter(m => !m.isRead).length
     }, 'Messages retrieved successfully');
   } catch (error) {
     console.error('Get messages error:', error);
