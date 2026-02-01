@@ -153,6 +153,15 @@ async function createIndexes() {
     } catch (e) {
       // Index may already exist
     }
+
+    // Blocked users indexes
+    try {
+      await db.collection('blocked_users').createIndex({ userId: 1, blockedUserId: 1 }, { unique: true });
+      await db.collection('blocked_users').createIndex({ userId: 1 });
+      await db.collection('blocked_users').createIndex({ blockedUserId: 1 });
+    } catch (e) {
+      // Index may already exist
+    }
   } catch (error) {
     console.warn('Warning creating indexes:', error.message);
   }

@@ -73,7 +73,11 @@ app.get('/api', (req, res) => {
         search: 'GET /api/users/search/:query',
         updateStatus: 'PUT /api/users/status',
         getUserStatus: 'GET /api/users/:userId/status',
-        getFriendsStatus: 'GET /api/users/friends/status'
+        getFriendsStatus: 'GET /api/users/friends/status',
+        blockUser: 'POST /api/users/block',
+        unblockUser: 'POST /api/users/unblock',
+        getBlockedUsers: 'GET /api/users/blocked',
+        checkBlockStatus: 'GET /api/users/check/:userId'
       },
       message: {
         upload: 'POST /api/message/upload',

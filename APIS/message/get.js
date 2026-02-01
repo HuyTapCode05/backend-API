@@ -30,9 +30,31 @@ router.get('/:roomId', verifyToken, getMessagesLimiter, async (req, res) => {
       return sendError(res, 'Database not connected', 'Server error', 500);
     }
 
+    const blockedUsers = await db.collection('blocked_users')
+      .find({
+        $or: [
+          { userId: req.userId },
+          { blockedUserId: req.userId }
+        ]
+      })
+      .toArray();
+
+    const blockedUserIds = new Set();
+    blockedUsers.forEach(b => {
+      if (b.userId === req.userId) {
+        blockedUserIds.add(b.blockedUserId);
+      }
+      if (b.blockedUserId === req.userId) {
+        blockedUserIds.add(b.userId);
+      }
+    });
+
     const query = { roomId };
     if (before) {
       query.createdAt = { $lt: before };
+    }
+    if (blockedUserIds.size > 0) {
+      query.userId = { $nin: Array.from(blockedUserIds) };
     }
 
     const messages = await db.collection('messages')

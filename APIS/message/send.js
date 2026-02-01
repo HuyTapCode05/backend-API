@@ -53,6 +53,17 @@ router.post('/send', verifyToken, messageLimiter, async (req, res) => {
       return sendError(res, 'Database not connected', 'Server error', 500);
     }
 
+    const blockedCheck = await db.collection('blocked_users').findOne({
+      $or: [
+        { userId: req.userId, blockedUserId: roomId },
+        { userId: roomId, blockedUserId: req.userId }
+      ]
+    });
+
+    if (blockedCheck) {
+      return sendError(res, 'Cannot send message. User is blocked.', 'Forbidden', 403);
+    }
+
     const user = await db.collection('users').findOne(
       { _id: new ObjectId(req.userId) },
       { projection: { password: 0 } }
