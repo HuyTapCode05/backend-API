@@ -11,6 +11,8 @@ import authRoutes from './APIS/Auth/index.js';
 import usersRoutes from './APIS/users/index.js';
 import messageRoutes from './APIS/message/index.js';
 import groupsRoutes from './APIS/groups/index.js';
+import friendsRoutes from './APIS/friends/index.js';
+import notificationsRoutes from './APIS/notifications/index.js';
 import { initWebSocket } from './config/websocket.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -90,6 +92,24 @@ app.get('/api', (req, res) => {
         removeMember: 'DELETE /api/groups/:groupId/members/:userId',
         promoteMember: 'POST /api/groups/:groupId/members/:userId/promote',
         demoteAdmin: 'POST /api/groups/:groupId/members/:userId/demote'
+      },
+      friends: {
+        sendRequest: 'POST /api/friends/request',
+        acceptRequest: 'POST /api/friends/accept',
+        rejectRequest: 'POST /api/friends/reject',
+        getRequests: 'GET /api/friends/requests',
+        list: 'GET /api/friends',
+        remove: 'DELETE /api/friends/:friendId'
+      },
+      notifications: {
+        get: 'GET /api/notifications?unreadOnly=true&type=friend_request',
+        markRead: 'PUT /api/notifications/:notificationId/read',
+        markAllRead: 'PUT /api/notifications/read-all'
+      },
+      messageReactions: {
+        add: 'POST /api/message/:messageId/reaction',
+        remove: 'DELETE /api/message/:messageId/reaction',
+        get: 'GET /api/message/:messageId/reactions'
       }
     }
   });
@@ -98,8 +118,10 @@ app.get('/api', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);      // All auth routes (login, register, verify, password reset, token)
 app.use('/api/users', usersRoutes);    // All user routes (profile, avatar, search)
-app.use('/api/message', messageRoutes);    // All message routes (upload, send, get, update, delete, search)
-app.use('/api/groups', groupsRoutes);  // All group routes (create, list, get, update, delete, members)   
+app.use('/api/message', messageRoutes);    // All message routes (upload, send, get, update, delete, search, reactions)
+app.use('/api/groups', groupsRoutes);  // All group routes (create, list, get, update, delete, members)
+app.use('/api/friends', friendsRoutes);  // All friend routes (request, accept, reject, list)
+app.use('/api/notifications', notificationsRoutes);  // All notification routes (get, mark as read)   
 
 // Health check
 app.get('/api/health', (req, res) => {

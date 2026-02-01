@@ -111,6 +111,40 @@ async function createIndexes() {
     } catch (e) {
       // Index may already exist
     }
+
+    // Friends indexes
+    try {
+      await db.collection('friends').createIndex({ userId: 1, friendId: 1 }, { unique: true });
+      await db.collection('friends').createIndex({ userId: 1, status: 1 });
+      await db.collection('friend_requests').createIndex({ fromUserId: 1, toUserId: 1 }, { unique: true });
+      await db.collection('friend_requests').createIndex({ toUserId: 1, status: 1 });
+    } catch (e) {
+      // Index may already exist
+    }
+
+    // Notifications indexes
+    try {
+      await db.collection('notifications').createIndex({ userId: 1, read: 1, createdAt: -1 });
+      await db.collection('notifications').createIndex({ userId: 1, type: 1 });
+    } catch (e) {
+      // Index may already exist
+    }
+
+    // Message reactions indexes
+    try {
+      await db.collection('message_reactions').createIndex({ messageId: 1, userId: 1 }, { unique: true });
+      await db.collection('message_reactions').createIndex({ messageId: 1 });
+    } catch (e) {
+      // Index may already exist
+    }
+
+    // Read receipts indexes
+    try {
+      await db.collection('read_receipts').createIndex({ messageId: 1, userId: 1 }, { unique: true });
+      await db.collection('read_receipts').createIndex({ userId: 1, roomId: 1 });
+    } catch (e) {
+      // Index may already exist
+    }
   } catch (error) {
     console.warn('Warning creating indexes:', error.message);
   }

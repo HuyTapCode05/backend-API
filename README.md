@@ -6,7 +6,7 @@
 
 - ✅ **Authentication System** - Đăng ký, đăng nhập, JWT tokens, email verification, password reset
 - ✅ **Real-time Messaging** - Gửi/nhận tin nhắn real-time qua WebSocket
-- ✅ **Multiple Rooms** - Hỗ trợ nhiều phòng chat
+- ✅ **Multiple Groups** - Hỗ trợ nhiều nhóm chat
 - ✅ **File Upload** - Upload ảnh, video, voice, sticker, avatar
 - ✅ **User Management** - Profile, avatar, search users
 - ✅ **Message Management** - Send, get, update, delete messages
@@ -678,7 +678,7 @@ EMAIL_FROM=your-email@gmail.com
 - Server tự động tạo indexes cho performance tốt hơn
 - WebSocket tự động reconnect khi mất kết nối
 - Messages được lưu vào MongoDB để có thể query sau
-- Hỗ trợ nhiều rooms đồng thời
+- Hỗ trợ nhiều groups đồng thời
 - Real-time user presence tracking
 - File uploads được lưu trong thư mục `Uploads/`
 
