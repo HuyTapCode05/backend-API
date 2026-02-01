@@ -123,6 +123,10 @@ app.get('/api', (req, res) => {
         markAllRead: 'POST /api/message/room/:roomId/read-all',
         getReadStatus: 'GET /api/message/:messageId/read-status',
         getUnreadCount: 'GET /api/message/room/:roomId/unread-count'
+      },
+      messageReplies: {
+        sendReply: 'POST /api/message/send (with replyToMessageId)',
+        getReplies: 'GET /api/message/:messageId/replies'
       }
     }
   });

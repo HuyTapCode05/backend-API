@@ -17,9 +17,9 @@ const messageLimiter = rateLimit({
 });
 router.post('/send', verifyToken, messageLimiter, async (req, res) => {
   try {
-    const allowedFields = ['roomId', 'text', 'fileUrl', 'fileType', 'messageType', 'source'];
+    const allowedFields = ['roomId', 'text', 'fileUrl', 'fileType', 'messageType', 'source', 'replyToMessageId'];
     const body = whitelistObject(req.body, allowedFields);
-    let { roomId, text, fileUrl, fileType, messageType, source } = body;
+    let { roomId, text, fileUrl, fileType, messageType, source, replyToMessageId } = body;
 
     if (!roomId) {
       return sendError(res, 'RoomId is required', 'Validation error', 400);
@@ -67,6 +67,18 @@ router.post('/send', verifyToken, messageLimiter, async (req, res) => {
       ? source.toLowerCase() 
       : 'web';
 
+    let replyToMessage = null;
+    if (replyToMessageId && isValidObjectId(replyToMessageId)) {
+      replyToMessage = await db.collection('messages').findOne(
+        { _id: new ObjectId(replyToMessageId), roomId: roomId },
+        { projection: { userId: 1, username: 1, text: 1, messageType: 1, fileUrl: 1 } }
+      );
+
+      if (!replyToMessage) {
+        return sendError(res, 'Reply message not found in this room', 'Validation error', 400);
+      }
+    }
+
     const message = {
       _id: new ObjectId(),
       userId: req.userId,
@@ -78,6 +90,15 @@ router.post('/send', verifyToken, messageLimiter, async (req, res) => {
       fileType: fileType || null,
       messageType: messageType || (fileUrl ? 'file' : 'text'),
       source: messageSource,
+      replyToMessageId: replyToMessage ? replyToMessageId : null,
+      replyToMessage: replyToMessage ? {
+        messageId: replyToMessageId,
+        userId: replyToMessage.userId,
+        username: replyToMessage.username,
+        text: replyToMessage.text,
+        messageType: replyToMessage.messageType,
+        fileUrl: replyToMessage.fileUrl
+      } : null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       user: {
