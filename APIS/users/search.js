@@ -27,7 +27,7 @@ router.get('/search/:query', verifyToken, searchLimiter, async (req, res) => {
 
     limit = parseInt(limit);
     if (isNaN(limit) || limit < 1 || limit > 100) {
-      limit = 20; // Default to 20 if invalid
+      limit = 20;
     }
 
     const db = getDB();

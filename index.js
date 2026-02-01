@@ -10,6 +10,7 @@ import { initEmailTransporter, testEmailConnection } from './config/email.js';
 import authRoutes from './APIS/Auth/index.js';
 import usersRoutes from './APIS/users/index.js';
 import messageRoutes from './APIS/message/index.js';
+import groupsRoutes from './APIS/groups/index.js';
 import { initWebSocket } from './config/websocket.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -72,9 +73,23 @@ app.get('/api', (req, res) => {
       message: {
         upload: 'POST /api/message/upload',
         send: 'POST /api/message/send',
+        search: 'GET /api/message/search',
+        advancedSearch: 'GET /api/message/search/advanced',
         getMessages: 'GET /api/message/:roomId',
         updateMessage: 'PUT /api/message/:messageId',
         deleteMessage: 'DELETE /api/message/:messageId'
+      },
+      groups: {
+        create: 'POST /api/groups',
+        list: 'GET /api/groups?type=all|my|public|owned',
+        get: 'GET /api/groups/:groupId',
+        update: 'PUT /api/groups/:groupId',
+        delete: 'DELETE /api/groups/:groupId',
+        getMembers: 'GET /api/groups/:groupId/members',
+        addMember: 'POST /api/groups/:groupId/members',
+        removeMember: 'DELETE /api/groups/:groupId/members/:userId',
+        promoteMember: 'POST /api/groups/:groupId/members/:userId/promote',
+        demoteAdmin: 'POST /api/groups/:groupId/members/:userId/demote'
       }
     }
   });
@@ -83,7 +98,8 @@ app.get('/api', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);      // All auth routes (login, register, verify, password reset, token)
 app.use('/api/users', usersRoutes);    // All user routes (profile, avatar, search)
-app.use('/api/message', messageRoutes);   
+app.use('/api/message', messageRoutes);    // All message routes (upload, send, get, update, delete, search)
+app.use('/api/groups', groupsRoutes);  // All group routes (create, list, get, update, delete, members)   
 
 // Health check
 app.get('/api/health', (req, res) => {

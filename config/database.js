@@ -54,9 +54,12 @@ async function createIndexes() {
       }
     }
 
-    // Rooms indexes
+    // Groups indexes
     try {
-      await db.collection('rooms').createIndex({ name: 1 });
+      await db.collection('groups').createIndex({ name: 1 });
+      await db.collection('groups').createIndex({ owner: 1 });
+      await db.collection('groups').createIndex({ 'members.userId': 1 });
+      await db.collection('groups').createIndex({ createdAt: -1 });
     } catch (e) {
       // Index may already exist
     }

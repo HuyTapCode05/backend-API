@@ -303,6 +303,96 @@ DELETE /api/message/:messageId
 Authorization: Bearer {accessToken}
 ```
 
+### Groups
+
+#### Create Group
+```http
+POST /api/groups
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "name": "My Group",
+  "description": "Group description",
+  "avatar": "/Uploads/Images/Avatar/group.jpg",
+  "isPrivate": false,
+  "memberIds": ["userId1", "userId2"]
+}
+```
+
+#### List Groups
+```http
+GET /api/groups?type=all|my|public|owned&limit=50&skip=0&search=keyword
+Authorization: Bearer {accessToken}
+```
+
+Query Parameters:
+- `type` (optional): `all` (default), `my` (my groups), `public` (public groups), `owned` (owned groups)
+- `limit` (optional): Number of results (default: 50, max: 100)
+- `skip` (optional): Pagination offset (default: 0)
+- `search` (optional): Search keyword
+
+#### Get Group
+```http
+GET /api/groups/:groupId
+Authorization: Bearer {accessToken}
+```
+
+#### Update Group
+```http
+PUT /api/groups/:groupId
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "name": "Updated Group Name",
+  "description": "Updated description",
+  "avatar": "/Uploads/Images/Avatar/new.jpg",
+  "isPrivate": true
+}
+```
+
+#### Delete Group
+```http
+DELETE /api/groups/:groupId
+Authorization: Bearer {accessToken}
+```
+
+#### Get Group Members
+```http
+GET /api/groups/:groupId/members
+Authorization: Bearer {accessToken}
+```
+
+#### Add Member
+```http
+POST /api/groups/:groupId/members
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "userId": "user_id_here"
+}
+```
+
+#### Remove Member
+```http
+DELETE /api/groups/:groupId/members/:userId
+Authorization: Bearer {accessToken}
+```
+
+#### Promote Member to Admin
+```http
+POST /api/groups/:groupId/members/:userId/promote
+Authorization: Bearer {accessToken}
+```
+
+#### Demote Admin to Member
+```http
+POST /api/groups/:groupId/members/:userId/demote
+Authorization: Bearer {accessToken}
+```
+
 ## 🔌 WebSocket API
 
 ### Connection
@@ -452,14 +542,26 @@ const ws = new WebSocket('ws://localhost:3000');
 }
 ```
 
-#### rooms
+#### groups
 ```javascript
 {
   _id: ObjectId,
   name: String (unique),
   description: String,
+  avatar: String (url),
+  owner: String (userId),
+  admins: [String] (array of userIds),
+  members: [{
+    userId: String,
+    username: String,
+    avatar: String,
+    role: String, // 'owner', 'admin', 'member'
+    joinedAt: ISOString
+  }],
+  memberCount: Number,
+  isPrivate: Boolean,
   createdAt: ISOString,
-  userCount: Number
+  updatedAt: ISOString
 }
 ```
 
