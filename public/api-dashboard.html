@@ -511,9 +511,9 @@
             errors: 0
         };
 
-        // ---- Presets (ALL DATA) ----
-        const PRESETS = [
-          // Public
+        // ---- Presets ----
+        // Default: có 1 số preset cơ bản. Sau đó sẽ auto-sync theo GET /api (endpoints).
+        let PRESETS = [
           { key: 'health', name: 'Health Check', method: 'GET', path: '/api/health', requiresAuth: false },
           { key: 'apiInfo', name: 'API Info', method: 'GET', path: '/api', requiresAuth: false },
 
@@ -645,6 +645,69 @@
           { key: 'friends.list', name: 'Friends - List', method: 'GET', path: '/api/friends?limit=50&skip=0', requiresAuth: true },
           { key: 'friends.remove', name: 'Friends - Remove', method: 'DELETE', path: '/api/friends/${FRIEND_ID}', requiresAuth: true }
         ];
+
+        // Map body template theo "METHOD PATH" đúng như /api trả về (chỉ các endpoint cần body).
+        const BODY_TEMPLATES = {
+          'POST /api/auth/register': { username: 'tu_${TS8}', password: 'password123', email: 'test_${TS8}@example.com' },
+          'POST /api/auth/login': { username: '${LAST_USERNAME}', password: 'password123' },
+          'POST /api/auth/refresh': { refreshToken: '${REFRESH_TOKEN}' },
+          'POST /api/auth/logout': { refreshToken: '${REFRESH_TOKEN}' },
+          'POST /api/auth/verify-email': { code: '123456' },
+          'POST /api/auth/resend-verification': { email: 'test_${TS8}@example.com' },
+          'POST /api/auth/forgot-password': { email: 'test_${TS8}@example.com' },
+          'POST /api/auth/reset-password': { token: '${RESET_TOKEN}', newPassword: 'newpassword123' },
+
+          'PUT /api/users/me': { username: 'new_${TS8}', email: 'new_${TS8}@example.com' },
+          'PUT /api/users/status': { status: 'online' },
+          'POST /api/users/block': { userId: '${USER_ID_TARGET}' },
+          'POST /api/users/unblock': { userId: '${USER_ID_TARGET}' },
+
+          'POST /api/message/send': { roomId: '${ROOM_ID}', text: 'Hello ${TS8}' },
+          'PUT /api/message/:messageId': { text: 'Updated ${TS8}' },
+          'POST /api/message/:messageId/reaction': { emoji: '👍' },
+
+          'POST /api/groups': { name: 'My Group ${TS8}', description: 'Group description', isPrivate: false },
+          'PUT /api/groups/:groupId': { name: 'Updated Group ${TS8}', description: 'Updated description', isPrivate: true },
+          'POST /api/groups/:groupId/members': { userId: '${USER_ID_TARGET}' },
+
+          'POST /api/friends/request': { userId: '${USER_ID_TARGET}' },
+          'POST /api/friends/accept': { requestId: '${REQUEST_ID}' },
+          'POST /api/friends/reject': { requestId: '${REQUEST_ID}' }
+        };
+
+        // Hooks để auto lưu token/ids sau khi call
+        const ON_SUCCESS_BY_SIG = {
+          'POST /api/auth/register': (json) => {
+            const at = json?.data?.accessToken;
+            const rt = json?.data?.refreshToken;
+            const uid = json?.data?.user?._id || json?.data?.user?.id;
+            if (at) setAccessToken(at);
+            if (rt) setRefreshToken(rt);
+            if (uid) setVar('USER_ID', uid);
+          },
+          'POST /api/auth/login': (json) => {
+            const at = json?.data?.accessToken;
+            const rt = json?.data?.refreshToken;
+            const uid = json?.data?.user?._id || json?.data?.user?.id;
+            if (at) setAccessToken(at);
+            if (rt) setRefreshToken(rt);
+            if (uid) setVar('USER_ID', uid);
+          },
+          'POST /api/auth/refresh': (json) => {
+            const at = json?.data?.accessToken;
+            const rt = json?.data?.refreshToken;
+            if (at) setAccessToken(at);
+            if (rt) setRefreshToken(rt);
+          },
+          'POST /api/groups': (json) => {
+            const gid = json?._id || json?.data?._id || json?.data?.group?._id;
+            if (gid) setVar('GROUP_ID', gid);
+          },
+          'POST /api/message/send': (json) => {
+            const mid = json?.data?._id || json?._id;
+            if (mid) setVar('MESSAGE_ID', mid);
+          }
+        };
 
         // Defaults for vars
         if (!vars.ROOM_ID) vars.ROOM_ID = 'room123';
@@ -958,12 +1021,97 @@
                     updateStats();
                     displayEndpoints(data.endpoints);
                     displayServerInfo(data);
+                    // Auto-sync presets theo /api endpoints
+                    syncPresetsFromApiEndpoints(data.endpoints);
+                    renderPresetsSelect();
+                    renderQuickTests();
                 }
             } catch (error) {
                 console.error('Failed to load endpoints:', error);
                 document.getElementById('endpoints-list').innerHTML = 
                     '<div style="color: #f44336; text-align: center; padding: 20px;">Failed to load endpoints</div>';
             }
+        }
+
+        function flattenApiEndpoints(endpointsObj) {
+          const out = [];
+          function walk(obj, prefix = '') {
+            for (const k of Object.keys(obj || {})) {
+              const v = obj[k];
+              if (typeof v === 'string') {
+                const [method, path] = v.split(' ');
+                out.push({ category: prefix || 'root', key: `${prefix}.${k}`.replace(/^\./, ''), method, path, label: `${prefix ? prefix + ' - ' : ''}${k}` });
+              } else if (v && typeof v === 'object') {
+                walk(v, k);
+              }
+            }
+          }
+          walk(endpointsObj, '');
+          return out;
+        }
+
+        function requiresAuthByPath(path) {
+          // Public endpoints
+          if (path === '/api/health' || path === '/api') return false;
+          // Auth endpoints are public
+          if (path.startsWith('/api/auth/')) return false;
+          return true;
+        }
+
+        function syncPresetsFromApiEndpoints(endpointsObj) {
+          const flat = flattenApiEndpoints(endpointsObj);
+          const synced = [];
+          // keep basic
+          synced.push({ key: 'health', name: 'Health Check', method: 'GET', path: '/api/health', requiresAuth: false });
+          synced.push({ key: 'apiInfo', name: 'API Info', method: 'GET', path: '/api', requiresAuth: false });
+
+          for (const e of flat) {
+            const sig = `${e.method} ${e.path}`;
+            // bỏ 2 cái public đã add ở trên để tránh duplicate
+            if (sig === 'GET /api/health' || sig === 'GET /api') continue;
+            const preset = {
+              key: `api.${e.key}`,
+              name: e.label,
+              method: e.method,
+              path: e.path,
+              requiresAuth: requiresAuthByPath(e.path)
+            };
+
+            // attach body template if match exact signature or parameterized signature
+            preset.body = BODY_TEMPLATES[sig] || null;
+            if (!preset.body) {
+              // map param patterns
+              const paramSig = sig
+                .replace(/\/api\/users\/:userId/g, '/api/users/:userId')
+                .replace(/\/api\/groups\/:groupId/g, '/api/groups/:groupId')
+                .replace(/\/api\/message\/:messageId/g, '/api/message/:messageId')
+                .replace(/\/api\/notifications\/:notificationId/g, '/api/notifications/:notificationId');
+              preset.body = BODY_TEMPLATES[paramSig] || null;
+            }
+
+            // attach onSuccess hook
+            preset.onSuccess = ON_SUCCESS_BY_SIG[sig] || ON_SUCCESS_BY_SIG[sig.replace(/\/api\/users\/:userId/g, '/api/users/:userId')
+              .replace(/\/api\/groups\/:groupId/g, '/api/groups/:groupId')
+              .replace(/\/api\/message\/:messageId/g, '/api/message/:messageId')] || null;
+
+            // Replace :params with our variables in URL path for calling
+            preset.path = preset.path
+              .replace(':userId', '${USER_ID}')
+              .replace(':groupId', '${GROUP_ID}')
+              .replace(':messageId', '${MESSAGE_ID}')
+              .replace(':notificationId', '${NOTIFICATION_ID}')
+              .replace(':friendId', '${FRIEND_ID}');
+
+            // Some endpoints include query placeholders
+            preset.path = preset.path
+              .replace('/api/users/search/:query', '/api/users/search/test?limit=20')
+              .replace('/api/message/:roomId', '/api/message/${ROOM_ID}?limit=50&skip=0');
+
+            synced.push(preset);
+          }
+
+          // Override global PRESETS
+          PRESETS = synced;
         }
 
         function countEndpoints(endpoints) {
