@@ -13,6 +13,7 @@ import messageRoutes from './APIS/message/index.js';
 import groupsRoutes from './APIS/groups/index.js';
 import friendsRoutes from './APIS/friends/index.js';
 import notificationsRoutes from './APIS/notifications/index.js';
+import keysRoutes from './APIS/keys/index.js';
 import { initWebSocket } from './config/websocket.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -63,7 +64,9 @@ app.get('/api', (req, res) => {
         verifyEmail: 'POST /api/auth/verify-email',
         resendVerification: 'POST /api/auth/resend-verification',
         forgotPassword: 'POST /api/auth/forgot-password',
-        resetPassword: 'POST /api/auth/reset-password'
+        resetPassword: 'POST /api/auth/reset-password',
+        getTokenInfo: 'GET /api/auth/token/info',
+        getRefreshTokens: 'GET /api/auth/token/refresh-tokens'
       },
       users: {
         me: 'GET /api/users/me',
@@ -131,6 +134,11 @@ app.get('/api', (req, res) => {
       mentions: {
         getMyMentions: 'GET /api/message/mentions/me',
         getRoomUserMentions: 'GET /api/message/mentions/room/:roomId/user/:userId'
+      },
+      apiKeys: {
+        generate: 'POST /api/keys/generate',
+        list: 'GET /api/keys/list',
+        delete: 'DELETE /api/keys/:keyId'
       }
     }
   });
@@ -142,7 +150,8 @@ app.use('/api/users', usersRoutes);    // All user routes (profile, avatar, sear
 app.use('/api/message', messageRoutes);    // All message routes (upload, send, get, update, delete, search, reactions)
 app.use('/api/groups', groupsRoutes);  // All group routes (create, list, get, update, delete, members)
 app.use('/api/friends', friendsRoutes);  // All friend routes (request, accept, reject, list)
-app.use('/api/notifications', notificationsRoutes);  // All notification routes (get, mark as read)   
+app.use('/api/notifications', notificationsRoutes);  // All notification routes (get, mark as read)
+app.use('/api/keys', keysRoutes);      // All API key routes (generate, list, delete)   
 
 // Health check
 app.get('/api/health', (req, res) => {
