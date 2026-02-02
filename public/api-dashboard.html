@@ -320,6 +320,9 @@
         <div class="nav-item active" data-page="dashboard">
             <span>📊</span> Dashboard
         </div>
+        <div class="nav-item" data-page="quicktests">
+            <span>⚡</span> Quick Tests
+        </div>
         <div class="nav-item" data-page="endpoints">
             <span>🔌</span> Endpoints
         </div>
@@ -389,10 +392,45 @@
                 </div>
             </div>
 
+            <!-- Quick Tests Page -->
+            <div id="page-quicktests" class="page hidden">
+                <div class="section">
+                    <h2>1-Click Presets</h2>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom: 12px;">
+                        <button class="btn btn-primary" onclick="runSmokeTest()">Run Smoke Test</button>
+                        <button class="btn btn-secondary" onclick="renderQuickTests()">Reload Presets</button>
+                    </div>
+                    <div style="color:#888; font-size: 13px; margin-bottom: 12px;">
+                        Tip: preset nào cần token thì app sẽ auto gắn <code>Authorization: Bearer</code> từ Settings. Các ID/token sẽ auto lưu vào Variables sau mỗi request.
+                    </div>
+                    <div class="endpoint-list" id="quicktests-list">
+                        <div style="color: #888; text-align: center; padding: 20px;">Loading presets...</div>
+                    </div>
+                </div>
+
+                <div class="test-panel">
+                    <h2>Quick Test Response</h2>
+                    <div class="response-area" id="quicktest-response" style="display: none;">
+                        <pre id="quicktest-response-content"></pre>
+                    </div>
+                </div>
+            </div>
+
             <!-- Test API Page -->
             <div id="page-test" class="page hidden">
                 <div class="test-panel">
                     <h2>Test API Endpoint</h2>
+                    <div class="section" style="margin-top: 0; margin-bottom: 15px;">
+                        <h2 style="margin-bottom: 10px;">Load Preset (khỏi gõ JSON)</h2>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                            <select id="preset-select" style="min-width: 320px;"></select>
+                            <button class="btn btn-secondary" type="button" onclick="loadSelectedPreset()">Load</button>
+                            <button class="btn btn-primary" type="button" onclick="runSelectedPreset()">Run</button>
+                        </div>
+                        <div style="color:#888; font-size: 12px; margin-top: 8px;">
+                            Variables: <code>${"{ACCESS_TOKEN}"}</code>, <code>${"{REFRESH_TOKEN}"}</code>, <code>${"{USER_ID}"}</code>, <code>${"{GROUP_ID}"}</code>, <code>${"{MESSAGE_ID}"}</code>, <code>${"{ROOM_ID}"}</code>...
+                        </div>
+                    </div>
                     <form class="test-form" onsubmit="handleTestSubmit(event)">
                         <div class="form-group">
                             <label>Method</label>
@@ -446,6 +484,14 @@
                         <label>Access Token (Optional)</label>
                         <input type="password" id="access-token" placeholder="Bearer token" onchange="saveSettings()">
                     </div>
+                    <div class="form-group">
+                        <label>Refresh Token (Optional)</label>
+                        <input type="password" id="refresh-token" placeholder="refreshToken" onchange="saveSettings()">
+                    </div>
+                    <div class="form-group">
+                        <label>Variables (IDs)</label>
+                        <textarea id="vars-json" placeholder='{\"USER_ID\":\"...\",\"GROUP_ID\":\"...\",\"MESSAGE_ID\":\"...\",\"ROOM_ID\":\"room123\"}'></textarea>
+                    </div>
                     <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
                 </div>
             </div>
@@ -455,6 +501,8 @@
     <script>
         const API_BASE = localStorage.getItem('apiBaseUrl') || 'http://localhost:3000';
         let accessToken = localStorage.getItem('accessToken') || '';
+        let refreshToken = localStorage.getItem('refreshToken') || '';
+        let vars = JSON.parse(localStorage.getItem('apiVars') || '{}');
         let activityLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
         let stats = {
             total: 0,
@@ -462,6 +510,398 @@
             success: 0,
             errors: 0
         };
+
+        // ---- Presets (ALL DATA) ----
+        const PRESETS = [
+          // Public
+          { key: 'health', name: 'Health Check', method: 'GET', path: '/api/health', requiresAuth: false },
+          { key: 'apiInfo', name: 'API Info', method: 'GET', path: '/api', requiresAuth: false },
+
+          // Auth
+          {
+            key: 'auth.register',
+            name: 'Auth - Register',
+            method: 'POST',
+            path: '/api/auth/register',
+            requiresAuth: false,
+            body: { username: 'testuser_${TS}', password: 'password123', email: 'test_${TS}@example.com' },
+            onSuccess: (json) => {
+              const at = json?.data?.accessToken;
+              const rt = json?.data?.refreshToken;
+              const uid = json?.data?.user?._id || json?.data?.user?.id;
+              if (at) setAccessToken(at);
+              if (rt) setRefreshToken(rt);
+              if (uid) setVar('USER_ID', uid);
+            }
+          },
+          {
+            key: 'auth.login',
+            name: 'Auth - Login',
+            method: 'POST',
+            path: '/api/auth/login',
+            requiresAuth: false,
+            body: { username: '${LAST_USERNAME}', password: 'password123' },
+            onSuccess: (json) => {
+              const at = json?.data?.accessToken;
+              const rt = json?.data?.refreshToken;
+              const uid = json?.data?.user?._id || json?.data?.user?.id;
+              if (at) setAccessToken(at);
+              if (rt) setRefreshToken(rt);
+              if (uid) setVar('USER_ID', uid);
+            }
+          },
+          {
+            key: 'auth.refresh',
+            name: 'Auth - Refresh Token',
+            method: 'POST',
+            path: '/api/auth/refresh',
+            requiresAuth: false,
+            body: { refreshToken: '${REFRESH_TOKEN}' },
+            onSuccess: (json) => {
+              const at = json?.data?.accessToken;
+              const rt = json?.data?.refreshToken;
+              if (at) setAccessToken(at);
+              if (rt) setRefreshToken(rt);
+            }
+          },
+          {
+            key: 'auth.logout',
+            name: 'Auth - Logout',
+            method: 'POST',
+            path: '/api/auth/logout',
+            requiresAuth: true,
+            body: { refreshToken: '${REFRESH_TOKEN}' }
+          },
+
+          // Users
+          { key: 'users.me', name: 'Users - Get Me', method: 'GET', path: '/api/users/me', requiresAuth: true },
+          { key: 'users.search', name: 'Users - Search (query=test)', method: 'GET', path: '/api/users/search/test?limit=20', requiresAuth: true },
+          { key: 'users.updateProfile', name: 'Users - Update Profile', method: 'PUT', path: '/api/users/me', requiresAuth: true, body: { username: 'newname_${TS}', email: 'new_${TS}@example.com' } },
+          { key: 'users.statusUpdate', name: 'Users - Update Status', method: 'PUT', path: '/api/users/status', requiresAuth: true, body: { status: 'online' } },
+          { key: 'users.getStatus', name: 'Users - Get User Status', method: 'GET', path: '/api/users/${USER_ID}/status', requiresAuth: true },
+          { key: 'users.friendsStatus', name: 'Users - Get Friends Status', method: 'GET', path: '/api/users/friends/status', requiresAuth: true },
+
+          // Block
+          { key: 'users.block', name: 'Users - Block User', method: 'POST', path: '/api/users/block', requiresAuth: true, body: { userId: '${USER_ID_TARGET}' } },
+          { key: 'users.unblock', name: 'Users - Unblock User', method: 'POST', path: '/api/users/unblock', requiresAuth: true, body: { userId: '${USER_ID_TARGET}' } },
+          { key: 'users.blocked', name: 'Users - List Blocked', method: 'GET', path: '/api/users/blocked?limit=50&skip=0', requiresAuth: true },
+          { key: 'users.blockCheck', name: 'Users - Check Block Status', method: 'GET', path: '/api/users/check/${USER_ID_TARGET}', requiresAuth: true },
+
+          // Groups
+          {
+            key: 'groups.create',
+            name: 'Groups - Create',
+            method: 'POST',
+            path: '/api/groups',
+            requiresAuth: true,
+            body: { name: 'My Group ${TS}', description: 'Group description', isPrivate: false },
+            onSuccess: (json) => {
+              const gid = json?._id || json?.data?._id || json?.data?.group?._id;
+              if (gid) setVar('GROUP_ID', gid);
+            }
+          },
+          { key: 'groups.list', name: 'Groups - List (my)', method: 'GET', path: '/api/groups?type=my&limit=50&skip=0', requiresAuth: true },
+          { key: 'groups.get', name: 'Groups - Get', method: 'GET', path: '/api/groups/${GROUP_ID}', requiresAuth: true },
+          { key: 'groups.update', name: 'Groups - Update', method: 'PUT', path: '/api/groups/${GROUP_ID}', requiresAuth: true, body: { name: 'Updated Group ${TS}', description: 'Updated', isPrivate: true } },
+          { key: 'groups.members', name: 'Groups - Get Members', method: 'GET', path: '/api/groups/${GROUP_ID}/members', requiresAuth: true },
+          { key: 'groups.addMember', name: 'Groups - Add Member', method: 'POST', path: '/api/groups/${GROUP_ID}/members', requiresAuth: true, body: { userId: '${USER_ID_TARGET}' } },
+          { key: 'groups.removeMember', name: 'Groups - Remove Member', method: 'DELETE', path: '/api/groups/${GROUP_ID}/members/${USER_ID_TARGET}', requiresAuth: true },
+          { key: 'groups.promote', name: 'Groups - Promote Member', method: 'POST', path: '/api/groups/${GROUP_ID}/members/${USER_ID_TARGET}/promote', requiresAuth: true },
+          { key: 'groups.demote', name: 'Groups - Demote Admin', method: 'POST', path: '/api/groups/${GROUP_ID}/members/${USER_ID_TARGET}/demote', requiresAuth: true },
+          { key: 'groups.delete', name: 'Groups - Delete', method: 'DELETE', path: '/api/groups/${GROUP_ID}', requiresAuth: true },
+
+          // Messages
+          {
+            key: 'message.send',
+            name: 'Message - Send Text',
+            method: 'POST',
+            path: '/api/message/send',
+            requiresAuth: true,
+            body: { roomId: '${ROOM_ID}', text: 'Hello world ${TS}' },
+            onSuccess: (json) => {
+              const mid = json?.data?._id || json?._id;
+              if (mid) setVar('MESSAGE_ID', mid);
+            }
+          },
+          { key: 'message.get', name: 'Message - Get Messages', method: 'GET', path: '/api/message/${ROOM_ID}?limit=50&skip=0', requiresAuth: true },
+          { key: 'message.reply', name: 'Message - Send Reply', method: 'POST', path: '/api/message/send', requiresAuth: true, body: { roomId: '${ROOM_ID}', text: 'reply ${TS}', replyToMessageId: '${MESSAGE_ID}' } },
+          { key: 'message.update', name: 'Message - Update', method: 'PUT', path: '/api/message/${MESSAGE_ID}', requiresAuth: true, body: { text: 'Updated ${TS}' } },
+          { key: 'message.replies', name: 'Message - Get Replies', method: 'GET', path: '/api/message/${MESSAGE_ID}/replies?limit=50&skip=0', requiresAuth: true },
+          { key: 'message.mentionsMe', name: 'Message - Mentions Me', method: 'GET', path: '/api/message/mentions/me?limit=50&skip=0', requiresAuth: true },
+          { key: 'message.reactionAdd', name: 'Message - Add Reaction', method: 'POST', path: '/api/message/${MESSAGE_ID}/reaction', requiresAuth: true, body: { emoji: '👍' } },
+          { key: 'message.reactions', name: 'Message - Get Reactions', method: 'GET', path: '/api/message/${MESSAGE_ID}/reactions', requiresAuth: true },
+          { key: 'message.read', name: 'Message - Mark Read', method: 'POST', path: '/api/message/${MESSAGE_ID}/read', requiresAuth: true },
+          { key: 'message.readAll', name: 'Message - Mark All Read', method: 'POST', path: '/api/message/room/${ROOM_ID}/read-all', requiresAuth: true },
+          { key: 'message.delete', name: 'Message - Delete', method: 'DELETE', path: '/api/message/${MESSAGE_ID}', requiresAuth: true },
+
+          // Notifications
+          { key: 'noti.get', name: 'Notifications - Get', method: 'GET', path: '/api/notifications?limit=50&skip=0&unreadOnly=false', requiresAuth: true },
+          { key: 'noti.markRead', name: 'Notifications - Mark Read', method: 'PUT', path: '/api/notifications/${NOTIFICATION_ID}/read', requiresAuth: true },
+          { key: 'noti.markAllRead', name: 'Notifications - Mark All Read', method: 'PUT', path: '/api/notifications/read-all', requiresAuth: true },
+
+          // Friends (needs USER_ID_TARGET / REQUEST_ID / FRIEND_ID)
+          { key: 'friends.request', name: 'Friends - Send Request', method: 'POST', path: '/api/friends/request', requiresAuth: true, body: { userId: '${USER_ID_TARGET}' } },
+          { key: 'friends.accept', name: 'Friends - Accept', method: 'POST', path: '/api/friends/accept', requiresAuth: true, body: { requestId: '${REQUEST_ID}' } },
+          { key: 'friends.reject', name: 'Friends - Reject', method: 'POST', path: '/api/friends/reject', requiresAuth: true, body: { requestId: '${REQUEST_ID}' } },
+          { key: 'friends.requests', name: 'Friends - List Requests', method: 'GET', path: '/api/friends/requests?type=received&limit=50&skip=0', requiresAuth: true },
+          { key: 'friends.list', name: 'Friends - List', method: 'GET', path: '/api/friends?limit=50&skip=0', requiresAuth: true },
+          { key: 'friends.remove', name: 'Friends - Remove', method: 'DELETE', path: '/api/friends/${FRIEND_ID}', requiresAuth: true }
+        ];
+
+        // Defaults for vars
+        if (!vars.ROOM_ID) vars.ROOM_ID = 'room123';
+        if (!vars.USER_ID_TARGET) vars.USER_ID_TARGET = '';
+        if (!vars.NOTIFICATION_ID) vars.NOTIFICATION_ID = '';
+        if (!vars.REQUEST_ID) vars.REQUEST_ID = '';
+        if (!vars.FRIEND_ID) vars.FRIEND_ID = '';
+
+        function saveVars() {
+          localStorage.setItem('apiVars', JSON.stringify(vars));
+          const varsTextarea = document.getElementById('vars-json');
+          if (varsTextarea) varsTextarea.value = JSON.stringify(vars, null, 2);
+        }
+        function setVar(key, value) {
+          if (!key) return;
+          vars[key] = value;
+          saveVars();
+        }
+        function setAccessToken(token) {
+          accessToken = token || '';
+          localStorage.setItem('accessToken', accessToken);
+          const input = document.getElementById('access-token');
+          if (input) input.value = accessToken;
+        }
+        function setRefreshToken(token) {
+          refreshToken = token || '';
+          localStorage.setItem('refreshToken', refreshToken);
+          const input = document.getElementById('refresh-token');
+          if (input) input.value = refreshToken;
+        }
+
+        function substituteTemplate(value) {
+          const ts = Date.now().toString();
+          const lastUsername = localStorage.getItem('lastUsername') || `testuser_${ts}`;
+          if (typeof value === 'string') {
+            return value
+              .replaceAll('${TS}', ts)
+              .replaceAll('${ACCESS_TOKEN}', accessToken || '')
+              .replaceAll('${REFRESH_TOKEN}', refreshToken || '')
+              .replaceAll('${LAST_USERNAME}', lastUsername)
+              .replaceAll('${ROOM_ID}', vars.ROOM_ID || 'room123')
+              .replaceAll('${USER_ID}', vars.USER_ID || '')
+              .replaceAll('${GROUP_ID}', vars.GROUP_ID || '')
+              .replaceAll('${MESSAGE_ID}', vars.MESSAGE_ID || '')
+              .replaceAll('${USER_ID_TARGET}', vars.USER_ID_TARGET || '')
+              .replaceAll('${NOTIFICATION_ID}', vars.NOTIFICATION_ID || '')
+              .replaceAll('${REQUEST_ID}', vars.REQUEST_ID || '')
+              .replaceAll('${FRIEND_ID}', vars.FRIEND_ID || '');
+          }
+          if (Array.isArray(value)) return value.map(substituteTemplate);
+          if (value && typeof value === 'object') {
+            const out = {};
+            for (const k of Object.keys(value)) out[k] = substituteTemplate(value[k]);
+            return out;
+          }
+          return value;
+        }
+
+        function getPresetByKey(key) {
+          return PRESETS.find(p => p.key === key);
+        }
+
+        function renderPresetsSelect() {
+          const sel = document.getElementById('preset-select');
+          if (!sel) return;
+          sel.innerHTML = '';
+          PRESETS.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.key;
+            opt.textContent = `${p.method} ${p.path} — ${p.name}`;
+            sel.appendChild(opt);
+          });
+        }
+
+        function loadSelectedPreset() {
+          const sel = document.getElementById('preset-select');
+          if (!sel) return;
+          const preset = getPresetByKey(sel.value);
+          if (!preset) return;
+          document.getElementById('test-method').value = preset.method;
+          document.getElementById('test-url').value = `${API_BASE}${substituteTemplate(preset.path)}`;
+          document.getElementById('test-headers').value = '';
+          const body = preset.body ? substituteTemplate(preset.body) : '';
+          document.getElementById('test-body').value = body ? JSON.stringify(body, null, 2) : '';
+        }
+
+        async function runSelectedPreset() {
+          const sel = document.getElementById('preset-select');
+          if (!sel) return;
+          await runPreset(sel.value, { showIn: 'test' });
+        }
+
+        function renderQuickTests() {
+          const list = document.getElementById('quicktests-list');
+          if (!list) return;
+          list.innerHTML = '';
+          PRESETS.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'endpoint-item';
+            const methodClass = `method-${p.method.toLowerCase()}`;
+            const authBadge = p.requiresAuth
+              ? '<span class="status-badge status-pending" style="margin-left:8px;">AUTH</span>'
+              : '<span class="status-badge status-success" style="margin-left:8px;">PUBLIC</span>';
+            item.innerHTML = `
+              <div class="endpoint-info">
+                <span class="endpoint-method ${methodClass}">${p.method}</span>
+                <span class="endpoint-path">${p.path}</span>
+                ${authBadge}
+                <div style="color:#aaa; font-size:12px; margin-top:6px;">${p.name}</div>
+              </div>
+              <div class="endpoint-actions">
+                <button class="btn btn-secondary" onclick="loadPresetToTest('${p.key}')">Load</button>
+                <button class="btn btn-primary" onclick="runPreset('${p.key}', { showIn: 'quick' })">Run</button>
+              </div>
+            `;
+            list.appendChild(item);
+          });
+        }
+
+        function loadPresetToTest(key) {
+          const preset = getPresetByKey(key);
+          if (!preset) return;
+          document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+          document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+          document.querySelector('[data-page="test"]').classList.add('active');
+          document.getElementById('page-test').classList.remove('hidden');
+          document.getElementById('page-title').textContent = 'Test API';
+          const sel = document.getElementById('preset-select');
+          if (sel) sel.value = key;
+          loadSelectedPreset();
+        }
+
+        async function runPreset(key, opts = {}) {
+          const preset = getPresetByKey(key);
+          if (!preset) return;
+
+          const method = preset.method;
+          const url = `${API_BASE}${substituteTemplate(preset.path)}`;
+
+          // Build headers
+          const headers = { 'Content-Type': 'application/json' };
+          if (preset.requiresAuth) {
+            if (!accessToken) {
+              alert('Missing accessToken. Login/Register first or set token in Settings.');
+              return;
+            }
+            headers['Authorization'] = `Bearer ${accessToken}`;
+          }
+
+          const options = { method, headers };
+          if (preset.body && (method === 'POST' || method === 'PUT')) {
+            options.body = JSON.stringify(substituteTemplate(preset.body));
+          }
+
+          // Track lastUsername if this is register
+          if (key === 'auth.register') {
+            const body = substituteTemplate(preset.body);
+            if (body?.username) localStorage.setItem('lastUsername', body.username);
+          }
+
+          stats.active++;
+          updateStats();
+          const startTime = Date.now();
+
+          try {
+            const response = await fetch(url, options);
+            const endTime = Date.now();
+            const responseTime = endTime - startTime;
+
+            const contentType = response.headers.get('content-type');
+            let responseData;
+            if (contentType && contentType.includes('application/json')) {
+              responseData = await response.json();
+            } else {
+              responseData = await response.text();
+            }
+
+            stats.active--;
+            if (response.ok) stats.success++; else stats.errors++;
+            updateStats();
+
+            addActivity(method, url, response.status, responseTime);
+
+            // Save vars from response if any
+            if (response.ok && typeof preset.onSuccess === 'function') {
+              try { preset.onSuccess(responseData); } catch (_) {}
+            }
+
+            // Auto-pick notificationId/requestId/messageId if list returns items
+            if (response.ok) {
+              const firstNoti = responseData?.data?.notifications?.[0];
+              if (firstNoti?._id) setVar('NOTIFICATION_ID', firstNoti._id);
+              const firstReq = responseData?.data?.requests?.[0];
+              if (firstReq?._id) setVar('REQUEST_ID', firstReq._id);
+              const firstFriend = responseData?.data?.friends?.[0];
+              if (firstFriend?.userId) setVar('FRIEND_ID', firstFriend.userId);
+            }
+
+            // Show response
+            if (opts.showIn === 'quick') {
+              const box = document.getElementById('quicktest-response');
+              const pre = document.getElementById('quicktest-response-content');
+              if (box && pre) {
+                box.style.display = 'block';
+                box.className = 'response-area' + (response.ok ? '' : ' error');
+                pre.textContent = JSON.stringify(responseData, null, 2);
+              }
+            } else {
+              // load into test panel response view
+              const responseEl = document.getElementById('test-response');
+              const contentEl = document.getElementById('test-response-content');
+              if (responseEl && contentEl) {
+                responseEl.style.display = 'block';
+                responseEl.className = 'response-area' + (response.ok ? '' : ' error');
+                contentEl.textContent = JSON.stringify(responseData, null, 2);
+              }
+            }
+
+            return { ok: response.ok, status: response.status, data: responseData };
+          } catch (error) {
+            stats.active--;
+            stats.errors++;
+            updateStats();
+            addActivity(method, url, 'ERROR', 0);
+            if (opts.showIn === 'quick') {
+              const box = document.getElementById('quicktest-response');
+              const pre = document.getElementById('quicktest-response-content');
+              if (box && pre) {
+                box.style.display = 'block';
+                box.className = 'response-area error';
+                pre.textContent = `Error: ${error.message}`;
+              }
+            }
+            return { ok: false, status: 'ERROR', error: error.message };
+          }
+        }
+
+        async function runSmokeTest() {
+          // Safe-ish flow: health -> api -> register -> me -> refresh -> groups list -> send message -> get messages
+          const steps = [
+            'health',
+            'apiInfo',
+            'auth.register',
+            'users.me',
+            'auth.refresh',
+            'groups.list',
+            'message.send',
+            'message.get'
+          ];
+          for (const key of steps) {
+            // eslint-disable-next-line no-await-in-loop
+            const r = await runPreset(key, { showIn: 'quick' });
+            if (!r?.ok) break;
+          }
+        }
 
         // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -746,9 +1186,25 @@
         // Load settings
         document.getElementById('base-url').value = API_BASE;
         document.getElementById('access-token').value = accessToken;
+        document.getElementById('refresh-token').value = refreshToken;
+        document.getElementById('vars-json').value = JSON.stringify(vars, null, 2);
+
+        // allow editing vars json
+        document.getElementById('vars-json').addEventListener('change', () => {
+          try {
+            const v = JSON.parse(document.getElementById('vars-json').value || '{}');
+            vars = v && typeof v === 'object' ? v : {};
+            saveVars();
+            alert('Variables saved!');
+          } catch (e) {
+            alert('Invalid vars JSON');
+          }
+        });
 
         // Initialize
         init();
+        renderPresetsSelect();
+        renderQuickTests();
         setInterval(checkServerStatus, 30000); // Check every 30 seconds
     </script>
 </body>
