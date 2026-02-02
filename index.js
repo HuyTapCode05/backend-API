@@ -14,6 +14,7 @@ import groupsRoutes from './APIS/groups/index.js';
 import friendsRoutes from './APIS/friends/index.js';
 import notificationsRoutes from './APIS/notifications/index.js';
 import keysRoutes from './APIS/keys/index.js';
+import testRoutes from './APIS/test/index.js';
 import { initWebSocket } from './config/websocket.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -139,6 +140,10 @@ app.get('/api', (req, res) => {
         generate: 'POST /api/keys/generate',
         list: 'GET /api/keys/list',
         delete: 'DELETE /api/keys/:keyId'
+      },
+      test: {
+        routes: 'GET /api/test/routes',
+        db: 'GET /api/test/db'
       }
     }
   });
@@ -151,7 +156,8 @@ app.use('/api/message', messageRoutes);    // All message routes (upload, send, 
 app.use('/api/groups', groupsRoutes);  // All group routes (create, list, get, update, delete, members)
 app.use('/api/friends', friendsRoutes);  // All friend routes (request, accept, reject, list)
 app.use('/api/notifications', notificationsRoutes);  // All notification routes (get, mark as read)
-app.use('/api/keys', keysRoutes);      // All API key routes (generate, list, delete)   
+app.use('/api/keys', keysRoutes);      // All API key routes (generate, list, delete)
+app.use('/api/test', testRoutes);      // Test routes (routes list, db test)   
 
 // Health check
 app.get('/api/health', (req, res) => {
