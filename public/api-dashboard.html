@@ -524,7 +524,7 @@
             method: 'POST',
             path: '/api/auth/register',
             requiresAuth: false,
-            body: { username: 'testuser_${TS}', password: 'password123', email: 'test_${TS}@example.com' },
+            body: { username: 'tu_${TS8}', password: 'password123', email: 'test_${TS8}@example.com' },
             onSuccess: (json) => {
               const at = json?.data?.accessToken;
               const rt = json?.data?.refreshToken;
@@ -680,10 +680,12 @@
 
         function substituteTemplate(value) {
           const ts = Date.now().toString();
+          const ts8 = ts.slice(-8);
           const lastUsername = localStorage.getItem('lastUsername') || `testuser_${ts}`;
           if (typeof value === 'string') {
             return value
               .replaceAll('${TS}', ts)
+              .replaceAll('${TS8}', ts8)
               .replaceAll('${ACCESS_TOKEN}', accessToken || '')
               .replaceAll('${REFRESH_TOKEN}', refreshToken || '')
               .replaceAll('${LAST_USERNAME}', lastUsername)
