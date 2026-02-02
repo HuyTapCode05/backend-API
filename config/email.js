@@ -12,8 +12,7 @@ let transporter = null;
 
 export function initEmailTransporter() {
   if (!EMAIL_USER || !EMAIL_PASS) {
-    console.warn('⚠️  Email credentials not configured. Email sending will be disabled.');
-    console.warn('   Set EMAIL_USER and EMAIL_PASS environment variables to enable email.');
+    // Silent - email is optional, only log once on startup in index.js
     return false;
   }
 
