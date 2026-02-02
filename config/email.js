@@ -45,7 +45,7 @@ export function initEmailTransporter() {
  */
 export async function sendVerificationEmail(to, username, verificationCode) {
   if (!transporter) {
-    console.warn('⚠️  Email transporter not initialized. Email not sent.');
+    // Silent fail - email not configured is expected in development
     return false;
   }
 

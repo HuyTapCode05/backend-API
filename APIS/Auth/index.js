@@ -5,7 +5,6 @@ import registerRoutes from './register.js';
 import emailVerificationRoutes from './emailVerification.js';
 import passwordResetRoutes from './passwordReset.js';
 import tokenRoutes from './token.js';
-import getTokenRoutes from './getToken.js';
 
 const router = express.Router();
 
@@ -15,7 +14,6 @@ router.use('/', registerRoutes);        // POST /register
 router.use('/', emailVerificationRoutes); // POST /verify-email, POST /resend-verification
 router.use('/', passwordResetRoutes);   // POST /forgot-password, POST /reset-password
 router.use('/', tokenRoutes);          // POST /refresh, POST /logout
-router.use('/token', getTokenRoutes);   // GET /token/info, GET /token/refresh-tokens
 
 export default router;
 export { verifyToken } from './middleware.js';

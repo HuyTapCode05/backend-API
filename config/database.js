@@ -178,15 +178,6 @@ async function createIndexes() {
     } catch (e) {
       // Index may already exist
     }
-
-    // API keys indexes
-    try {
-      await db.collection('api_keys').createIndex({ userId: 1 });
-      await db.collection('api_keys').createIndex({ keyHash: 1 }, { unique: true });
-      await db.collection('api_keys').createIndex({ userId: 1, isActive: 1 });
-    } catch (e) {
-      // Index may already exist
-    }
   } catch (error) {
     console.warn('Warning creating indexes:', error.message);
   }

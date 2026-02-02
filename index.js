@@ -13,8 +13,6 @@ import messageRoutes from './APIS/message/index.js';
 import groupsRoutes from './APIS/groups/index.js';
 import friendsRoutes from './APIS/friends/index.js';
 import notificationsRoutes from './APIS/notifications/index.js';
-import keysRoutes from './APIS/keys/index.js';
-import testRoutes from './APIS/test/index.js';
 import { initWebSocket } from './config/websocket.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -65,9 +63,7 @@ app.get('/api', (req, res) => {
         verifyEmail: 'POST /api/auth/verify-email',
         resendVerification: 'POST /api/auth/resend-verification',
         forgotPassword: 'POST /api/auth/forgot-password',
-        resetPassword: 'POST /api/auth/reset-password',
-        getTokenInfo: 'GET /api/auth/token/info',
-        getRefreshTokens: 'GET /api/auth/token/refresh-tokens'
+        resetPassword: 'POST /api/auth/reset-password'
       },
       users: {
         me: 'GET /api/users/me',
@@ -135,15 +131,6 @@ app.get('/api', (req, res) => {
       mentions: {
         getMyMentions: 'GET /api/message/mentions/me',
         getRoomUserMentions: 'GET /api/message/mentions/room/:roomId/user/:userId'
-      },
-      apiKeys: {
-        generate: 'POST /api/keys/generate',
-        list: 'GET /api/keys/list',
-        delete: 'DELETE /api/keys/:keyId'
-      },
-      test: {
-        routes: 'GET /api/test/routes',
-        db: 'GET /api/test/db'
       }
     }
   });
@@ -155,9 +142,7 @@ app.use('/api/users', usersRoutes);    // All user routes (profile, avatar, sear
 app.use('/api/message', messageRoutes);    // All message routes (upload, send, get, update, delete, search, reactions)
 app.use('/api/groups', groupsRoutes);  // All group routes (create, list, get, update, delete, members)
 app.use('/api/friends', friendsRoutes);  // All friend routes (request, accept, reject, list)
-app.use('/api/notifications', notificationsRoutes);  // All notification routes (get, mark as read)
-app.use('/api/keys', keysRoutes);      // All API key routes (generate, list, delete)
-app.use('/api/test', testRoutes);      // Test routes (routes list, db test)   
+app.use('/api/notifications', notificationsRoutes);  // All notification routes (get, mark as read)   
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -182,11 +167,14 @@ async function startServer() {
       process.exit(1);
     }
 
-    // Initialize email transporter
+    // Initialize email transporter (optional)
     try {
       const emailInitialized = initEmailTransporter();
       if (emailInitialized) {
         await testEmailConnection();
+        console.log('✅ Email service ready');
+      } else {
+        console.log('ℹ️  Email service disabled (EMAIL_USER/EMAIL_PASS not set)');
       }
     } catch (error) {
       console.warn('⚠️  Email initialization warning:', error.message);

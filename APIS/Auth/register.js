@@ -82,9 +82,6 @@ router.post('/register', registerLimiter, async (req, res) => {
     });
 
     const emailSent = await sendVerificationEmail(email, username, verificationCode);
-    if (!emailSent) {
-      console.warn(`⚠️  Failed to send verification email to ${email}, but user was created`);
-    }
 
     const accessToken = jwt.sign(
       { userId: user._id.toString(), username: user.username },
@@ -115,7 +112,6 @@ router.post('/register', registerLimiter, async (req, res) => {
     if (!emailSent) {
       responseData.emailVerificationToken = emailToken;
       responseData.verificationCode = verificationCode;
-      console.warn('⚠️  Email not sent, verification code included in response for testing');
     }
 
     return sendSuccess(res, responseData, 
