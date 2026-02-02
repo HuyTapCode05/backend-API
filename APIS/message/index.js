@@ -8,6 +8,7 @@ import searchRoutes from './search.js';
 import reactionsRoutes from './reactions/index.js';
 import readReceiptsRoutes from './readReceipts/index.js';
 import repliesRoutes from './replies/index.js';
+import mentionsRoutes from './mentions/index.js';
 
 const router = express.Router();
 
@@ -20,6 +21,7 @@ router.use('/', updateRoutes);  // PUT /:messageId, DELETE /:messageId
 router.use('/', reactionsRoutes);  // POST /:messageId/reaction, DELETE /:messageId/reaction, GET /:messageId/reactions
 router.use('/', readReceiptsRoutes);  // POST /:messageId/read, POST /room/:roomId/read-all, GET /:messageId/read-status, GET /room/:roomId/unread-count
 router.use('/', repliesRoutes);  // GET /:messageId/replies
+router.use('/mentions', mentionsRoutes);  // GET /mentions/me, GET /mentions/room/:roomId/user/:userId
 
 export default router;
 

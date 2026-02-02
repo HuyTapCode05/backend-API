@@ -4,6 +4,7 @@ import { getDB } from '../../config/database.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 import { verifyToken } from '../Auth/middleware.js';
 import { isValidRoomId, isValidObjectId, validateText, sanitizeString, whitelistObject } from '../utils/validation.js';
+import { parseMentions, validateMentions } from '../utils/mentions.js';
 import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
@@ -79,6 +80,27 @@ router.post('/send', verifyToken, messageLimiter, async (req, res) => {
       }
     }
 
+    // Parse and validate mentions
+    let mentions = [];
+    if (text) {
+      const mentionedUsernames = parseMentions(text);
+      if (mentionedUsernames.length > 0) {
+        // Check if roomId is a group
+        const group = await db.collection('groups').findOne({ _id: roomId });
+        const isGroup = !!group;
+        
+        mentions = await validateMentions(db, mentionedUsernames, roomId, isGroup);
+        
+        // Remove duplicates
+        const seen = new Set();
+        mentions = mentions.filter(m => {
+          if (seen.has(m.userId)) return false;
+          seen.add(m.userId);
+          return true;
+        });
+      }
+    }
+
     const message = {
       _id: new ObjectId(),
       userId: req.userId,
@@ -99,6 +121,7 @@ router.post('/send', verifyToken, messageLimiter, async (req, res) => {
         messageType: replyToMessage.messageType,
         fileUrl: replyToMessage.fileUrl
       } : null,
+      mentions: mentions.length > 0 ? mentions : [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       user: {
@@ -110,6 +133,34 @@ router.post('/send', verifyToken, messageLimiter, async (req, res) => {
     };
 
     await db.collection('messages').insertOne(message);
+
+    // Create notifications for mentioned users (excluding the sender)
+    if (mentions.length > 0) {
+      const notificationPromises = mentions
+        .filter(m => m.userId !== req.userId)
+        .map(mention => {
+          return db.collection('notifications').insertOne({
+            _id: new ObjectId(),
+            userId: mention.userId,
+            type: 'mention',
+            title: `You were mentioned by ${user.username}`,
+            message: text ? (text.length > 100 ? text.substring(0, 100) + '...' : text) : 'You were mentioned in a message',
+            data: {
+              messageId: message._id.toString(),
+              roomId: roomId,
+              mentionedBy: {
+                userId: req.userId,
+                username: user.username,
+                avatar: user.avatar
+              }
+            },
+            read: false,
+            createdAt: new Date().toISOString()
+          });
+        });
+      
+      await Promise.all(notificationPromises);
+    }
 
     return sendSuccess(res, message, 'Message sent successfully');
   } catch (error) {

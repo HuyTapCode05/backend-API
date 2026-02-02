@@ -170,6 +170,14 @@ async function createIndexes() {
     } catch (e) {
       // Index may already exist
     }
+
+    // Message mentions indexes
+    try {
+      await db.collection('messages').createIndex({ 'mentions.userId': 1 });
+      await db.collection('messages').createIndex({ roomId: 1, 'mentions.userId': 1 });
+    } catch (e) {
+      // Index may already exist
+    }
   } catch (error) {
     console.warn('Warning creating indexes:', error.message);
   }

@@ -127,6 +127,10 @@ app.get('/api', (req, res) => {
       messageReplies: {
         sendReply: 'POST /api/message/send (with replyToMessageId)',
         getReplies: 'GET /api/message/:messageId/replies'
+      },
+      mentions: {
+        getMyMentions: 'GET /api/message/mentions/me',
+        getRoomUserMentions: 'GET /api/message/mentions/room/:roomId/user/:userId'
       }
     }
   });
