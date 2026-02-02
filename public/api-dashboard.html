@@ -609,8 +609,6 @@
           { key: 'groups.promote', name: 'Groups - Promote Member', method: 'POST', path: '/api/groups/${GROUP_ID}/members/${USER_ID_TARGET}/promote', requiresAuth: true },
           { key: 'groups.demote', name: 'Groups - Demote Admin', method: 'POST', path: '/api/groups/${GROUP_ID}/members/${USER_ID_TARGET}/demote', requiresAuth: true },
           { key: 'groups.delete', name: 'Groups - Delete', method: 'DELETE', path: '/api/groups/${GROUP_ID}', requiresAuth: true },
-
-          // Messages
           {
             key: 'message.send',
             name: 'Message - Send Text',
@@ -791,6 +789,14 @@
           // Build headers
           const headers = { 'Content-Type': 'application/json' };
           if (preset.requiresAuth) {
+            // Nếu chưa có accessToken nhưng có refreshToken, auto refresh trước
+            if (!accessToken && refreshToken && key !== 'auth.refresh') {
+              const refreshResult = await runPreset('auth.refresh', { showIn: opts.showIn || 'quick' });
+              if (!refreshResult?.ok) {
+                alert('Cannot auto-refresh token. Please login or set token in Settings.');
+                return;
+              }
+            }
             if (!accessToken) {
               alert('Missing accessToken. Login/Register first or set token in Settings.');
               return;
@@ -1179,9 +1185,29 @@
         function saveSettings() {
             const baseUrl = document.getElementById('base-url').value;
             const token = document.getElementById('access-token').value;
+            const rToken = document.getElementById('refresh-token').value;
+            const varsText = document.getElementById('vars-json').value;
+
             localStorage.setItem('apiBaseUrl', baseUrl);
             localStorage.setItem('accessToken', token);
+            localStorage.setItem('refreshToken', rToken);
             accessToken = token;
+            refreshToken = rToken;
+
+            // Optional: save vars if JSON hợp lệ
+            try {
+              if (varsText && varsText.trim().length > 0) {
+                const v = JSON.parse(varsText);
+                if (v && typeof v === 'object') {
+                  vars = v;
+                  saveVars();
+                }
+              }
+            } catch (e) {
+              // ignore, chỉ cảnh báo nhỏ
+              console.warn('Invalid vars JSON in Settings:', e.message);
+            }
+
             alert('Settings saved!');
         }
 
