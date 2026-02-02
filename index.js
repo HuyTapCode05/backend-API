@@ -47,6 +47,11 @@ uploadDirs.forEach(dir => {
   app.use(`/${dir}`, express.static(join(__dirname, dir)));
 });
 
+// API Dashboard route
+app.get('/dashboard', (req, res) => {
+  res.sendFile(join(__dirname, 'public', 'api-dashboard.html'));
+});
+
 // API Info endpoint
 app.get('/api', (req, res) => {
   res.json({
