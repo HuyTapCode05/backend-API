@@ -1184,9 +1184,17 @@
 
         function saveSettings() {
             const baseUrl = document.getElementById('base-url').value;
-            const token = document.getElementById('access-token').value;
-            const rToken = document.getElementById('refresh-token').value;
+            let token = document.getElementById('access-token').value || '';
+            let rToken = document.getElementById('refresh-token').value || '';
             const varsText = document.getElementById('vars-json').value;
+
+            // Normalize: cho phép user dán cả \"Bearer xxx\" nhưng mình chỉ lấy phần token
+            if (token.toLowerCase().startsWith('bearer ')) {
+              token = token.slice(7).trim();
+            }
+            if (rToken.toLowerCase().startsWith('bearer ')) {
+              rToken = rToken.slice(7).trim();
+            }
 
             localStorage.setItem('apiBaseUrl', baseUrl);
             localStorage.setItem('accessToken', token);
