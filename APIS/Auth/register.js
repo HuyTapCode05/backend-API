@@ -11,10 +11,8 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 const registerLimiter = rateLimit({
-  // Dev-friendly: 1 minute window, 20 requests
-  // (vẫn bảo vệ brute-force nhưng đỡ khó chịu khi test)
-  windowMs: 1 * 60 * 1000,
-  max: 20,
+  windowMs: 60 * 60 * 1000,
+  max: 3,
   message: 'Too many registration attempts, please try again later',
   standardHeaders: true,
   legacyHeaders: false,

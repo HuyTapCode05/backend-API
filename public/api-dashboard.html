@@ -4,11 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API Management Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
         }
 
         body {
@@ -18,6 +25,7 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
+            position: relative;
         }
 
         .sidebar {
@@ -27,6 +35,8 @@
             display: flex;
             flex-direction: column;
             padding: 20px 0;
+            position: relative;
+            z-index: 100;
         }
 
         .logo {
@@ -61,6 +71,9 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
+            z-index: 1;
+            background: #0f0f0f;
         }
 
         .header {
@@ -80,53 +93,145 @@
         .content {
             flex: 1;
             overflow-y: auto;
-            padding: 30px;
+            overflow-x: hidden;
+            padding: 30px 40px;
+            height: 100%;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
         }
 
         .stat-card {
-            background: #1a1a1a;
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
             border: 1px solid #2a2a2a;
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: default;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent 0%, currentColor 50%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(74, 158, 255, 0.2);
+            border-color: currentColor;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
         .stat-card h3 {
-            font-size: 14px;
+            font-size: 13px;
             color: #888;
-            margin-bottom: 10px;
+            margin: 0;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stat-icon {
+            font-size: 24px;
+            opacity: 0.7;
         }
 
         .stat-card .value {
-            font-size: 32px;
-            font-weight: bold;
+            font-size: 36px;
+            font-weight: 700;
             margin-bottom: 5px;
+            line-height: 1;
+            transition: all 0.3s;
         }
 
-        .stat-card.total .value { color: #4a9eff; }
-        .stat-card.active .value { color: #ffa500; }
-        .stat-card.success .value { color: #4caf50; }
-        .stat-card.error .value { color: #f44336; }
+        .stat-card:hover .value {
+            transform: scale(1.05);
+        }
+
+        .stat-card-footer {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .stat-card.total {
+            color: #4a9eff;
+        }
+
+        .stat-card.total .stat-icon { color: #4a9eff; }
+
+        .stat-card.active {
+            color: #ffa500;
+        }
+
+        .stat-card.active .stat-icon { color: #ffa500; }
+
+        .stat-card.success {
+            color: #4caf50;
+        }
+
+        .stat-card.success .stat-icon { color: #4caf50; }
+
+        .stat-card.error {
+            color: #f44336;
+        }
+
+        .stat-card.error .stat-icon { color: #f44336; }
 
         .section {
-            background: #1a1a1a;
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
             border: 1px solid #2a2a2a;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s;
+        }
+
+        .section:hover {
+            border-color: #3a3a3a;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .section h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
+            font-size: 20px;
+            margin-bottom: 20px;
             color: #e0e0e0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h2::before {
+            content: '';
+            width: 3px;
+            height: 20px;
+            background: linear-gradient(135deg, #4a9eff 0%, #6bb6ff 100%);
+            border-radius: 2px;
         }
 
         .endpoint-list {
@@ -301,6 +406,13 @@
             display: none;
         }
 
+        .page {
+            position: relative;
+            z-index: 1;
+            background: #0f0f0f;
+            min-height: 100%;
+        }
+
         .status-badge {
             display: inline-block;
             padding: 4px 8px;
@@ -312,13 +424,834 @@
         .status-success { background: #4caf50; color: white; }
         .status-error { background: #f44336; color: white; }
         .status-pending { background: #ff9800; color: white; }
+
+        .hero-section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 50px 40px;
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(74, 158, 255, 0.08) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-section h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #4a9eff 0%, #6bb6ff 50%, #8cc8ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 3s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero-section p {
+            font-size: 18px;
+            color: #aaa;
+            margin-bottom: 35px;
+            line-height: 1.8;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hero-actions .btn {
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .hero-actions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 158, 255, 0.3);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+            margin-bottom: 30px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 32px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(74, 158, 255, 0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card:hover {
+            border-color: #4a9eff;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(74, 158, 255, 0.2);
+        }
+
+        .feature-card .icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+            display: inline-block;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover .icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .intro-section {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .intro-section h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #4a9eff;
+        }
+
+        .intro-section p {
+            color: #aaa;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .intro-section ul {
+            color: #aaa;
+            line-height: 1.8;
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .intro-section li {
+            margin-bottom: 8px;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tech-badge {
+            background: linear-gradient(135deg, #252525 0%, #2a2a2a 100%);
+            border: 1px solid #3a3a3a;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #4a9eff;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .tech-badge:hover {
+            background: linear-gradient(135deg, #2a2a2a 0%, #303030 100%);
+            border-color: #4a9eff;
+            transform: translateY(-2px);
+        }
+
+        .about-hero {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 50px 40px;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(74, 158, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .about-hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .about-hero h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #4a9eff 0%, #6bb6ff 50%, #8cc8ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .about-hero p {
+            font-size: 20px;
+            color: #aaa;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .feature-section {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s;
+        }
+
+        .feature-section:hover {
+            border-color: #4a9eff;
+            box-shadow: 0 4px 20px rgba(74, 158, 255, 0.1);
+        }
+
+        .feature-section h2 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            color: #4a9eff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .feature-section h2::before {
+            content: '';
+            width: 4px;
+            height: 28px;
+            background: linear-gradient(135deg, #4a9eff 0%, #6bb6ff 100%);
+            border-radius: 2px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            background: #252525;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(135deg, #4a9eff 0%, #6bb6ff 100%);
+            transform: scaleY(0);
+            transition: transform 0.3s;
+        }
+
+        .feature-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .feature-item:hover {
+            border-color: #4a9eff;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(74, 158, 255, 0.15);
+        }
+
+        .feature-item strong {
+            color: #4a9eff;
+            font-size: 15px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .feature-item span {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .usage-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .usage-step {
+            background: linear-gradient(135deg, #252525 0%, #2a2a2a 100%);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .usage-step:hover {
+            border-color: #4a9eff;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(74, 158, 255, 0.2);
+        }
+
+        .usage-step-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #4a9eff 0%, #6bb6ff 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin: 0 auto 15px;
+        }
+
+        .usage-step h3 {
+            color: #e0e0e0;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .usage-step p {
+            color: #888;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .doc-section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+        }
+
+        .doc-section h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #4a9eff;
+        }
+
+        .code-block {
+            background: #0f0f0f;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #4caf50;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            color: #4caf50;
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: block;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1002;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            cursor: pointer;
+            color: #e0e0e0;
+            font-size: 24px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (min-width: 769px) {
+            .mobile-menu-toggle {
+                display: none;
+            }
+        }
+
+        .mobile-menu-toggle:hover {
+            background: #252525;
+        }
+
+        .mobile-menu-toggle:active {
+            background: #2a2a2a;
+            transform: scale(0.95);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 250px;
+            right: 0;
+            width: calc(100% - 250px);
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: 998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* On desktop, overlay should not interfere */
+        @media (min-width: 769px) {
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            html, body {
+                height: auto;
+                min-height: 100vh;
+            }
+
+            body {
+                flex-direction: column;
+                overflow-y: visible;
+                overflow-x: hidden;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .sidebar-overlay {
+                display: block;
+                left: 250px;
+                width: calc(100% - 250px);
+            }
+
+            .sidebar {
+                position: fixed !important;
+                left: -250px !important;
+                top: 0 !important;
+                height: 100vh !important;
+                width: 250px !important;
+                z-index: 1002 !important;
+                transition: left 0.3s ease !important;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5) !important;
+                background: #1a1a1a !important;
+                display: flex !important;
+                flex-direction: column !important;
+                transform: none !important;
+                margin: 0 !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+            
+            .sidebar .nav-item {
+                pointer-events: auto !important;
+                z-index: 1003 !important;
+                position: relative;
+                cursor: pointer;
+            }
+
+            /* Highest specificity possible - ONLY use left, NO margin-left */
+            /* Only apply when sidebar has .open class */
+            html body .sidebar.open,
+            html body .sidebar.open[class],
+            html body .sidebar.open[id],
+            html body #sidebar.open,
+            html body #sidebar.sidebar.open {
+                left: 0px !important;
+                margin-left: 0px !important;
+                margin-right: 0px !important;
+                transform: none !important;
+            }
+            
+            /* When sidebar does NOT have .open class, ensure it's hidden */
+            html body .sidebar:not(.open),
+            html body #sidebar:not(.open) {
+                left: -250px !important;
+                margin-left: 0px !important;
+                margin-right: 0px !important;
+                transform: none !important;
+            }
+
+            .sidebar.open ~ .sidebar-overlay {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            /* Main content should always be visible above overlay */
+            .main-content {
+                z-index: 1001 !important;
+                position: relative;
+            }
+
+            .content {
+                z-index: 1 !important;
+                position: relative;
+                background: #0f0f0f;
+            }
+
+            .page {
+                z-index: 2 !important;
+                position: relative;
+                background: #0f0f0f;
+            }
+
+            .main-content {
+                width: 100%;
+                margin-left: 0;
+                height: auto;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                z-index: 1;
+                background: #0f0f0f;
+            }
+
+            .content {
+                height: auto;
+                min-height: calc(100vh - 60px);
+                overflow-y: visible;
+                padding-bottom: 40px;
+                position: relative;
+                z-index: 1;
+                background: #0f0f0f;
+            }
+
+            .header {
+                padding: 15px 20px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .hero-section {
+                padding: 30px 20px;
+                margin-bottom: 25px;
+            }
+
+            .hero-section h1 {
+                font-size: 28px;
+            }
+
+            .hero-section p {
+                font-size: 16px;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .hero-actions .btn {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin-bottom: 25px;
+            }
+
+            .stat-card {
+                padding: 20px;
+            }
+
+            .stat-card .value {
+                font-size: 28px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin-top: 25px;
+                margin-bottom: 20px;
+            }
+
+            .feature-card {
+                padding: 25px;
+            }
+
+            .feature-card .icon {
+                font-size: 32px;
+            }
+
+            .section {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .section h2 {
+                font-size: 18px;
+            }
+
+            .endpoint-item {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .endpoint-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .endpoint-actions .btn {
+                flex: 1;
+            }
+
+            .test-form {
+                gap: 12px;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+
+            .about-hero {
+                padding: 30px 20px;
+            }
+
+            .about-hero h1 {
+                font-size: 28px;
+            }
+
+            .about-hero p {
+                font-size: 16px;
+            }
+
+            .feature-section {
+                padding: 20px;
+            }
+
+            .feature-section h2 {
+                font-size: 22px;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .usage-steps {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .tech-stack {
+                gap: 8px;
+            }
+
+            .tech-badge {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+
+            #current-server {
+                font-size: 10px;
+                word-break: break-all;
+            }
+
+            .header > div {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .status-badge {
+                font-size: 11px;
+                padding: 3px 6px;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .code-block {
+                padding: 15px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .content {
+                padding: 15px 10px;
+            }
+
+            .hero-section {
+                padding: 25px 15px;
+            }
+
+            .hero-section h1 {
+                font-size: 24px;
+            }
+
+            .stat-card {
+                padding: 18px;
+            }
+
+            .stat-card .value {
+                font-size: 24px;
+            }
+
+            .feature-card {
+                padding: 20px;
+            }
+
+            .section {
+                padding: 18px;
+            }
+
+            .about-hero h1 {
+                font-size: 24px;
+            }
+
+            .feature-section h2 {
+                font-size: 20px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .nav-item {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+
+        /* Tablet Styles */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .content {
+                padding: 25px 30px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">API Dashboard</div>
+    <div class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</div>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="logo">💬 Chat API</div>
         <div class="nav-item active" data-page="dashboard">
             <span>📊</span> Dashboard
+        </div>
+        <div class="nav-item" data-page="about">
+            <span>📖</span> Giới thiệu
         </div>
         <div class="nav-item" data-page="quicktests">
             <span>⚡</span> Quick Tests
@@ -340,45 +1273,341 @@
     <div class="main-content">
         <div class="header">
             <h1 id="page-title">Dashboard</h1>
-            <div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span id="current-server" style="color: #888; font-size: 12px; font-family: monospace;"></span>
                 <span id="server-status" class="status-badge status-pending">Checking...</span>
+                <button class="btn btn-secondary" onclick="switchServer()" style="font-size: 12px; padding: 6px 12px;">🔄 Switch Server</button>
             </div>
         </div>
 
         <div class="content">
             <!-- Dashboard Page -->
             <div id="page-dashboard" class="page">
+                <div class="hero-section">
+                    <div class="hero-content">
+                        <h1>💬 Real-time Chat Application API</h1>
+                        <p>Hệ thống API backend mạnh mẽ cho ứng dụng chat real-time với MongoDB và WebSocket. Cung cấp đầy đủ tính năng từ authentication đến real-time messaging với hiệu suất cao và bảo mật tốt.</p>
+                        <div class="hero-actions">
+                            <button class="btn btn-primary" onclick="testEndpoint('GET', '/api/health')">🔍 Test Health</button>
+                            <button class="btn btn-primary" onclick="testEndpoint('GET', '/api')">📋 API Info</button>
+                            <button class="btn btn-secondary" onclick="loadEndpoints()">🔄 Refresh</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="stats-grid">
                     <div class="stat-card total">
+                        <div class="stat-card-header">
                         <h3>Total Endpoints</h3>
+                            <span class="stat-icon">📊</span>
+                        </div>
                         <div class="value" id="stat-total">0</div>
+                        <div class="stat-card-footer">Available API endpoints</div>
                     </div>
                     <div class="stat-card active">
+                        <div class="stat-card-header">
                         <h3>Active Requests</h3>
+                            <span class="stat-icon">⚡</span>
+                        </div>
                         <div class="value" id="stat-active">0</div>
+                        <div class="stat-card-footer">Currently processing</div>
                     </div>
                     <div class="stat-card success">
+                        <div class="stat-card-header">
                         <h3>Success Rate</h3>
+                            <span class="stat-icon">✅</span>
+                        </div>
                         <div class="value" id="stat-success">0%</div>
+                        <div class="stat-card-footer">Successful requests</div>
                     </div>
                     <div class="stat-card error">
+                        <div class="stat-card-header">
                         <h3>Errors</h3>
+                            <span class="stat-icon">❌</span>
+                        </div>
                         <div class="value" id="stat-errors">0</div>
+                        <div class="stat-card-footer">Failed requests</div>
+                    </div>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="icon">🔐</div>
+                        <h3>Authentication System</h3>
+                        <p>Đăng ký, đăng nhập, JWT tokens, email verification, password reset hoàn chỉnh</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">⚡</div>
+                        <h3>Real-time Messaging</h3>
+                        <p>Gửi/nhận tin nhắn real-time qua WebSocket với typing indicators và presence</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">👥</div>
+                        <h3>Groups & Friends</h3>
+                        <p>Quản lý nhóm chat, bạn bè, gửi/nhận friend requests, block/unblock users</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">📎</div>
+                        <h3>File Upload</h3>
+                        <p>Upload ảnh, video, voice, sticker, avatar với Multer và validation</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">🔍</div>
+                        <h3>Advanced Search</h3>
+                        <p>Full-text search messages, search users, advanced filters và pagination</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">🔔</div>
+                        <h3>Notifications</h3>
+                        <p>Hệ thống thông báo real-time cho friend requests, mentions, reactions</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">💬</div>
+                        <h3>Message Features</h3>
+                        <p>Reactions, replies, mentions, read receipts, message updates và deletion</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">🛡️</div>
+                        <h3>Security</h3>
+                        <p>Input validation, rate limiting, IDOR protection, password hashing, CORS</p>
                     </div>
                 </div>
 
                 <div class="section">
-                    <h2>Quick Actions</h2>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="btn btn-primary" onclick="testEndpoint('GET', '/api/health')">Test Health</button>
-                        <button class="btn btn-primary" onclick="testEndpoint('GET', '/api')">Get API Info</button>
-                        <button class="btn btn-secondary" onclick="loadEndpoints()">Refresh Endpoints</button>
+                    <h2>🖥️ Server Information</h2>
+                    <div id="server-info" style="color: #aaa; line-height: 1.8;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span style="color: #4a9eff;">●</span>
+                            <span>Loading server information...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Page -->
+            <div id="page-about" class="page hidden">
+                <!-- Hero Section -->
+                <div class="about-hero">
+                    <div class="about-hero-content">
+                        <h1>💬 Real-time Chat Application API</h1>
+                        <p>
+                            Hệ thống backend mạnh mẽ và hoàn chỉnh cho ứng dụng chat real-time. 
+                            Cung cấp đầy đủ các tính năng từ authentication, real-time messaging, 
+                            đến quản lý groups, friends và notifications với hiệu suất cao và bảo mật tốt.
+                        </p>
                     </div>
                 </div>
 
-                <div class="section">
-                    <h2>Server Information</h2>
-                    <div id="server-info" style="color: #888;">Loading...</div>
+                <!-- Features Section -->
+                <div class="feature-section">
+                    <h2>🔐 Authentication & Security</h2>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <strong>🔑 Đăng ký/Đăng nhập</strong>
+                            <span>Hệ thống xác thực hoàn chỉnh với JWT tokens, hỗ trợ refresh token tự động</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>📧 Email Verification</strong>
+                            <span>Xác thực email khi đăng ký tài khoản với mã OTP 6 số</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>🔒 Password Reset</strong>
+                            <span>Quên mật khẩu và reset qua email với token bảo mật</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>🛡️ Security Features</strong>
+                            <span>Rate limiting, input validation, IDOR protection, password hashing với bcrypt</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-section">
+                    <h2>💬 Real-time Messaging</h2>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <strong>⚡ WebSocket Support</strong>
+                            <span>Kết nối real-time qua WebSocket cho instant messaging, không delay</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>📝 Message Types</strong>
+                            <span>Hỗ trợ text, file, image, video, voice, sticker với validation đầy đủ</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>✨ Message Features</strong>
+                            <span>Edit, delete, reactions (emoji), replies, mentions (@username)</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>✓ Read Receipts</strong>
+                            <span>Theo dõi tin nhắn đã đọc/chưa đọc, đếm số unread messages</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>⌨️ Typing Indicators</strong>
+                            <span>Hiển thị real-time khi user đang gõ tin nhắn</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>🟢 User Presence</strong>
+                            <span>Online/offline status tracking, hiển thị trạng thái hoạt động</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-section">
+                    <h2>👥 Social Features</h2>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <strong>👫 Friends System</strong>
+                            <span>Gửi/nhận friend requests, quản lý danh sách bạn bè, xem status bạn bè</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>👨‍👩‍👧‍👦 Groups Management</strong>
+                            <span>Tạo và quản lý nhóm chat, thêm/xóa members, phân quyền admin/owner</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>🚫 Block/Unblock</strong>
+                            <span>Chặn và bỏ chặn users, kiểm tra trạng thái block</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>🔍 User Search</strong>
+                            <span>Tìm kiếm users theo username với pagination và filters</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-section">
+                    <h2>📎 File Management</h2>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <strong>📤 File Upload</strong>
+                            <span>Upload ảnh, video, voice, sticker, avatar với Multer middleware</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>✅ File Validation</strong>
+                            <span>Kiểm tra file type, size, format trước khi upload</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>💾 Storage System</strong>
+                            <span>Lưu trữ file có tổ chức trong thư mục Uploads/ với phân loại rõ ràng</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-section">
+                    <h2>🔍 Search & Discovery</h2>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <strong>🔎 Full-text Search</strong>
+                            <span>Tìm kiếm messages với MongoDB text search, tối ưu performance</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>🎯 Advanced Filters</strong>
+                            <span>Lọc theo type, date range, source, room với nhiều điều kiện</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>📄 Pagination</strong>
+                            <span>Hỗ trợ limit, skip cho kết quả lớn, tối ưu tốc độ load</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>📊 Search Analytics</strong>
+                            <span>Hiển thị total results, hasMore, relevance score</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-section">
+                    <h2>🔔 Notifications</h2>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <strong>⚡ Real-time Notifications</strong>
+                            <span>Thông báo instant cho friend requests, mentions, reactions</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>📋 Notification Types</strong>
+                            <span>Friend request, message mention, reaction, group invite</span>
+                        </div>
+                        <div class="feature-item">
+                            <strong>✓ Read Status</strong>
+                            <span>Đánh dấu đã đọc/chưa đọc, mark all as read</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tech Stack Section -->
+                <div class="feature-section">
+                    <h2>🛠️ Công nghệ sử dụng</h2>
+                    <p style="color: #aaa; margin-bottom: 20px; line-height: 1.8;">
+                        API được xây dựng với các công nghệ hiện đại và phổ biến, đảm bảo hiệu suất cao, 
+                        bảo mật tốt và dễ dàng mở rộng.
+                    </p>
+                    <div class="tech-stack">
+                        <span class="tech-badge">Node.js</span>
+                        <span class="tech-badge">Express.js</span>
+                        <span class="tech-badge">MongoDB</span>
+                        <span class="tech-badge">WebSocket (ws)</span>
+                        <span class="tech-badge">JWT</span>
+                        <span class="tech-badge">Multer</span>
+                        <span class="tech-badge">Nodemailer</span>
+                        <span class="tech-badge">bcryptjs</span>
+                        <span class="tech-badge">CORS</span>
+                        <span class="tech-badge">Rate Limiting</span>
+                        <span class="tech-badge">UUID</span>
+                    </div>
+                </div>
+
+                <!-- Usage Section -->
+                <div class="feature-section">
+                    <h2>🚀 Cách sử dụng</h2>
+                    <p style="color: #aaa; margin-bottom: 25px; line-height: 1.8;">
+                        Dashboard này cung cấp đầy đủ công cụ để test và quản lý API một cách dễ dàng.
+                    </p>
+                    <div class="usage-steps">
+                        <div class="usage-step">
+                            <div class="usage-step-number">1</div>
+                            <h3>Test API</h3>
+                            <p>Sử dụng tab "Test API" để gửi requests thủ công hoặc "Quick Tests" để chạy preset có sẵn</p>
+                        </div>
+                        <div class="usage-step">
+                            <div class="usage-step-number">2</div>
+                            <h3>Xem Endpoints</h3>
+                            <p>Tab "Endpoints" hiển thị tất cả API endpoints có sẵn với method và path</p>
+                        </div>
+                        <div class="usage-step">
+                            <div class="usage-step-number">3</div>
+                            <h3>Quản lý Tokens</h3>
+                            <p>Vào "Settings" để cấu hình base URL, access token, refresh token và variables</p>
+                        </div>
+                        <div class="usage-step">
+                            <div class="usage-step-number">4</div>
+                            <h3>Theo dõi Activity</h3>
+                            <p>Tab "Activity" hiển thị lịch sử các requests đã gửi với status và response time</p>
+                        </div>
+                        <div class="usage-step">
+                            <div class="usage-step-number">5</div>
+                            <h3>Quick Tests</h3>
+                            <p>Sử dụng preset có sẵn để test nhanh: register, login, send message, create group</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documentation Section -->
+                <div class="doc-section">
+                    <h2>📚 API Documentation</h2>
+                    <p style="color: #aaa; margin-bottom: 20px; line-height: 1.8;">
+                        Xem chi tiết API documentation tại tab "Endpoints" hoặc truy cập endpoint sau để xem danh sách đầy đủ:
+                    </p>
+                    <div class="code-block">
+                        <code>GET /api</code>
+                    </div>
+                    <p style="color: #aaa; margin-top: 20px; margin-bottom: 15px; line-height: 1.8;">
+                        <strong style="color: #4a9eff;">Authentication:</strong> Tất cả các endpoints yêu cầu authentication 
+                        (trừ auth endpoints) cần header:
+                    </p>
+                    <div class="code-block">
+                        <code>Authorization: Bearer {accessToken}</code>
+                    </div>
+                    <p style="color: #aaa; margin-top: 20px; line-height: 1.8;">
+                        Access token có thể lấy được sau khi đăng nhập hoặc đăng ký thành công. 
+                        Sử dụng refresh token để lấy access token mới khi token hết hạn.
+                    </p>
                 </div>
             </div>
 
@@ -443,7 +1672,7 @@
                         </div>
                         <div class="form-group">
                             <label>URL</label>
-                            <input type="text" id="test-url" placeholder="http://localhost:3000/api/auth/login" value="http://localhost:3000">
+                            <input type="text" id="test-url" placeholder="http://103.149.252.114:3000/api/auth/login" value="http://103.149.252.114:3000">
                         </div>
                         <div class="form-group">
                             <label>Headers (JSON)</label>
@@ -478,7 +1707,7 @@
                     <h2>API Configuration</h2>
                     <div class="form-group">
                         <label>Base URL</label>
-                        <input type="text" id="base-url" value="http://localhost:3000" onchange="saveSettings()">
+                        <input type="text" id="base-url" value="http://103.149.252.114:3000" onchange="saveSettings()">
                     </div>
                     <div class="form-group">
                         <label>Access Token (Optional)</label>
@@ -499,7 +1728,16 @@
     </div>
 
     <script>
-        const API_BASE = localStorage.getItem('apiBaseUrl') || 'http://localhost:3000';
+        // Auto-detect base URL from current location, fallback to server IP
+        const getDefaultBaseUrl = () => {
+            // If running on the server itself, use current origin
+            if (window.location.hostname === '103.149.252.114' || window.location.hostname.includes('103.149.252.114')) {
+                return window.location.origin;
+            }
+            // Otherwise use the server IP
+            return 'http://103.149.252.114:3000';
+        };
+        const API_BASE = localStorage.getItem('apiBaseUrl') || getDefaultBaseUrl();
         let accessToken = localStorage.getItem('accessToken') || '';
         let refreshToken = localStorage.getItem('refreshToken') || '';
         let vars = JSON.parse(localStorage.getItem('apiVars') || '{}');
@@ -974,20 +2212,312 @@
           }
         }
 
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            console.log('🔵 toggleMobileMenu called');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            if (!sidebar) {
+                console.error('❌ Sidebar not found!');
+                return;
+            }
+            
+            const isOpen = sidebar.classList.contains('open');
+            console.log('📊 Sidebar state:', isOpen ? 'OPEN' : 'CLOSED');
+            console.log('📱 Window width:', window.innerWidth);
+            console.log('🎯 Sidebar element:', sidebar);
+            console.log('📍 Current left:', sidebar.style.left || 'not set');
+            
+            // Force all styles inline to override any CSS
+            if (!isOpen) {
+                console.log('➡️ Opening sidebar...');
+                
+                // Add open class first
+                sidebar.classList.add('open');
+                
+                // Clear ALL inline styles first
+                sidebar.removeAttribute('style');
+                
+                // Force reflow
+                sidebar.offsetHeight;
+                
+                // Small delay to ensure CSS is applied
+                setTimeout(() => {
+                    sidebar.offsetHeight;
+                }, 0);
+                
+                // Set ALL styles fresh with !important - ONLY use LEFT, NO margin-left
+                const styles = {
+                    'position': 'fixed',
+                    'left': '0px',
+                    'top': '0px',
+                    'right': 'auto',
+                    'height': '100vh',
+                    'width': '250px',
+                    'z-index': '1002',
+                    'background': '#1a1a1a',
+                    'display': 'flex',
+                    'flex-direction': 'column',
+                    'transform': 'none',
+                    'margin': '0',
+                    'margin-left': '0',
+                    'margin-right': '0',
+                    'padding': '20px 0',
+                    'transition': 'left 0.3s ease',
+                    'box-shadow': '2px 0 10px rgba(0, 0, 0, 0.5)',
+                    'visibility': 'visible',
+                    'opacity': '1',
+                    'pointer-events': 'auto'
+                };
+                
+                // Apply all styles with !important
+                Object.keys(styles).forEach(prop => {
+                    sidebar.style.setProperty(prop, styles[prop], 'important');
+                });
+                
+                // Force multiple reflows
+                sidebar.offsetHeight;
+                sidebar.offsetHeight;
+                sidebar.offsetHeight;
+                
+                // Also set via cssText as backup - ONLY left, NO margin-left
+                setTimeout(() => {
+                    sidebar.style.setProperty('left', '0px', 'important');
+                    sidebar.style.setProperty('margin-left', '0', 'important');
+                    sidebar.style.setProperty('margin-right', '0', 'important');
+                    sidebar.style.setProperty('right', 'auto', 'important');
+                    sidebar.offsetHeight;
+                }, 10);
+                
+                // Verify and fix if needed - ONLY check left, ignore margin-left
+                requestAnimationFrame(() => {
+                    const cs = window.getComputedStyle(sidebar);
+                    const left = cs.left;
+                    const leftValue = parseFloat(left);
+                    
+                    console.log('🔍 Final computed left:', left);
+                    
+                    // Only check left, not margin-left
+                    if (leftValue < 0 || left !== '0px') {
+                        console.warn('🔧 Left still wrong, forcing one more time...', left);
+                        sidebar.style.setProperty('left', '0px', 'important');
+                        sidebar.style.setProperty('margin-left', '0', 'important');
+                        sidebar.offsetHeight;
+                    } else {
+                        console.log('✅ Left is correct:', left);
+                    }
+                });
+                
+                console.log('✅ Sidebar opened');
+                
+                // Show overlay on mobile
+                if (overlay && window.innerWidth <= 768) {
+                    overlay.classList.add('active');
+                    console.log('🌑 Overlay activated');
+                }
+            } else {
+                console.log('⬅️ Closing sidebar...');
+                // Close sidebar - use left, not transform
+                sidebar.classList.remove('open');
+                
+                // Clear all inline styles first
+                sidebar.removeAttribute('style');
+                sidebar.offsetHeight;
+                
+                // Set closing styles with !important
+                sidebar.style.setProperty('position', 'fixed', 'important');
+                sidebar.style.setProperty('left', '-250px', 'important');
+                sidebar.style.setProperty('top', '0px', 'important');
+                sidebar.style.setProperty('height', '100vh', 'important');
+                sidebar.style.setProperty('width', '250px', 'important');
+                sidebar.style.setProperty('z-index', '1002', 'important');
+                sidebar.style.setProperty('margin-left', '0', 'important');
+                sidebar.style.setProperty('margin-right', '0', 'important');
+                sidebar.style.setProperty('transform', 'none', 'important');
+                sidebar.style.setProperty('transition', 'left 0.3s ease', 'important');
+                sidebar.style.setProperty('background', '#1a1a1a', 'important');
+                sidebar.style.setProperty('display', 'flex', 'important');
+                sidebar.style.setProperty('flex-direction', 'column', 'important');
+                
+                // Force reflow
+                sidebar.offsetHeight;
+                sidebar.offsetHeight;
+                
+                // Verify and fix if needed
+                requestAnimationFrame(() => {
+                    const cs = window.getComputedStyle(sidebar);
+                    const left = cs.left;
+                    const leftValue = parseFloat(left);
+                    
+                    console.log('🔍 Closing - computed left:', left);
+                    
+                    // If left is not -250px, force fix
+                    if (leftValue > -250 || left !== '-250px') {
+                        console.warn('🔧 Closing - Left still wrong, forcing...', left);
+                        sidebar.style.setProperty('left', '-250px', 'important');
+                        sidebar.style.setProperty('margin-left', '0', 'important');
+                        sidebar.offsetHeight;
+                        
+                        // Double check
+                        requestAnimationFrame(() => {
+                            const cs2 = window.getComputedStyle(sidebar);
+                            console.log('🔍 Closing - Final computed left:', cs2.left);
+                            if (parseFloat(cs2.left) > -250) {
+                                console.warn('🔧 Closing - Still wrong, using cssText...');
+                                sidebar.style.cssText += '; left: -250px !important; margin-left: 0 !important;';
+                                sidebar.offsetHeight;
+                            }
+                        });
+                    } else {
+                        console.log('✅ Closing - Left is correct:', left);
+                    }
+                });
+                
+                console.log('✅ Sidebar closed');
+                
+                // Hide overlay
+                if (overlay) {
+                    overlay.classList.remove('active');
+                    console.log('🌑 Overlay deactivated');
+                }
+            }
+            
+            // Force reflow
+            sidebar.offsetHeight;
+            
+            // Verify final state and fix if needed
+            setTimeout(() => {
+                const computedStyle = window.getComputedStyle(sidebar);
+                console.log('🔍 Final computed left:', computedStyle.left);
+                console.log('🔍 Final computed transform:', computedStyle.transform);
+                console.log('🔍 Final computed position:', computedStyle.position);
+                console.log('🔍 Final computed z-index:', computedStyle.zIndex);
+                console.log('🔍 Inline style left:', sidebar.style.left);
+                console.log('🔍 Inline style transform:', sidebar.style.transform);
+                
+                // If transform is still wrong, force fix
+                if (!isOpen) {
+                    const transform = computedStyle.transform;
+                    const isTransformWrong = transform && transform !== 'none' && 
+                        transform !== 'matrix(1, 0, 0, 1, 0, 0)' &&
+                        !transform.includes('translateX(0');
+                    
+                    if (isTransformWrong) {
+                        console.warn('⚠️ Transform still wrong:', transform);
+                        console.warn('🔧 Forcing transform to translateX(0)...');
+                        
+                        // Remove and reapply
+                        sidebar.style.removeProperty('transform');
+                        sidebar.offsetHeight; // Force reflow
+                        sidebar.style.setProperty('transform', 'translateX(0px)', 'important');
+                        sidebar.style.setProperty('left', '0px', 'important');
+                        sidebar.style.setProperty('margin-left', '0', 'important');
+                        sidebar.style.setProperty('margin-right', '0', 'important');
+                        
+                        // Force reflow again
+                        sidebar.offsetHeight;
+                        
+                        // Check again after a delay
+                        setTimeout(() => {
+                            const newTransform = window.getComputedStyle(sidebar).transform;
+                            const newLeft = window.getComputedStyle(sidebar).left;
+                            console.log('🔍 After fix - transform:', newTransform);
+                            console.log('🔍 After fix - left:', newLeft);
+                            
+                            // Last resort: remove all transforms and use left only
+                            if (newTransform && newTransform !== 'none' && newTransform !== 'matrix(1, 0, 0, 1, 0, 0)') {
+                                console.warn('🔧 Last resort: removing transform, using left only');
+                                sidebar.style.removeProperty('transform');
+                                sidebar.style.setProperty('left', '0px', 'important');
+                                sidebar.style.setProperty('margin-left', '0', 'important');
+                            }
+                        }, 50);
+                    }
+                }
+            }, 100);
+        }
+
+        // Make function globally available
+        window.toggleMobileMenu = toggleMobileMenu;
+
+        // Close mobile menu when clicking overlay
+        const overlay = document.getElementById('sidebar-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Only close on mobile
+                if (window.innerWidth <= 768) {
+                    console.log('🔵 Overlay clicked, closing sidebar...');
+                    toggleMobileMenu();
+                }
+            });
+        }
+
+        // Close mobile menu on window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                if (sidebar) sidebar.classList.remove('open');
+                if (overlay) overlay.classList.remove('active');
+            }
+        });
+
         // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
+            item.addEventListener('click', (e) => {
+                // Stop propagation to prevent overlay from closing menu
+                e.stopPropagation();
+                e.preventDefault();
+                
+                console.log('🔵 Navigation clicked:', item.dataset.page);
+                
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
                 item.classList.add('active');
                 const page = item.dataset.page;
-                document.getElementById(`page-${page}`).classList.remove('hidden');
+                
+                const targetPage = document.getElementById(`page-${page}`);
+                if (targetPage) {
+                    targetPage.classList.remove('hidden');
                 document.getElementById('page-title').textContent = item.textContent.trim();
+                    console.log('✅ Page switched to:', page);
+                } else {
+                    console.error('❌ Page not found:', `page-${page}`);
+                }
+                
+                // Close mobile menu after navigation
+                if (window.innerWidth <= 768) {
+                    console.log('🔵 Closing sidebar after navigation...');
+                    toggleMobileMenu();
+                }
             });
         });
 
+        // Update current server display
+        function updateServerDisplay() {
+            const serverEl = document.getElementById('current-server');
+            if (serverEl) {
+                serverEl.textContent = `🌐 ${API_BASE}`;
+            }
+        }
+
+        // Switch between local and online server
+        function switchServer() {
+            const current = API_BASE;
+            const isOnline = current.includes('103.149.252.114');
+            const newUrl = isOnline ? 'http://localhost:3000' : 'http://103.149.252.114:3000';
+            
+            if (confirm(`Switch from ${current} to ${newUrl}?`)) {
+                localStorage.setItem('apiBaseUrl', newUrl);
+                window.location.reload();
+            }
+        }
+
         // Load initial data
         async function init() {
+            updateServerDisplay();
             checkServerStatus();
             loadEndpoints();
             loadActivity();
@@ -1166,9 +2696,27 @@
         function displayServerInfo(data) {
             const info = document.getElementById('server-info');
             info.innerHTML = `
-                <div style="margin-bottom: 10px;"><strong>Version:</strong> ${data.version || 'N/A'}</div>
-                <div style="margin-bottom: 10px;"><strong>Message:</strong> ${data.message || 'N/A'}</div>
-                <div><strong>Base URL:</strong> ${API_BASE}</div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <span style="color: #4a9eff; font-size: 18px;">📦</span>
+                    <div>
+                        <strong style="color: #e0e0e0;">Version:</strong> 
+                        <span style="color: #4a9eff; font-weight: 600;">${data.version || 'N/A'}</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <span style="color: #4a9eff; font-size: 18px;">💬</span>
+                    <div>
+                        <strong style="color: #e0e0e0;">Message:</strong> 
+                        <span style="color: #aaa;">${data.message || 'N/A'}</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #4a9eff; font-size: 18px;">🌐</span>
+                    <div>
+                        <strong style="color: #e0e0e0;">Base URL:</strong> 
+                        <code style="background: #252525; padding: 4px 8px; border-radius: 4px; color: #4caf50; font-family: monospace;">${API_BASE}</code>
+                    </div>
+                </div>
             `;
         }
 
@@ -1372,6 +2920,25 @@
         document.getElementById('access-token').value = accessToken;
         document.getElementById('refresh-token').value = refreshToken;
         document.getElementById('vars-json').value = JSON.stringify(vars, null, 2);
+        
+        // Update server display when base URL changes
+        document.getElementById('base-url').addEventListener('input', () => {
+            const newUrl = document.getElementById('base-url').value;
+            if (newUrl) {
+                const serverEl = document.getElementById('current-server');
+                if (serverEl) {
+                    serverEl.textContent = `🌐 ${newUrl}`;
+                }
+            }
+        });
+        
+        // Update server display when settings change
+        document.getElementById('base-url').addEventListener('change', () => {
+            const newUrl = document.getElementById('base-url').value;
+            if (newUrl !== API_BASE) {
+                updateServerDisplay();
+            }
+        });
 
         // allow editing vars json
         document.getElementById('vars-json').addEventListener('change', () => {
