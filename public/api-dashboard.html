@@ -1846,6 +1846,9 @@
           { key: 'groups.removeMember', name: 'Groups - Remove Member', method: 'DELETE', path: '/api/groups/${GROUP_ID}/members/${USER_ID_TARGET}', requiresAuth: true },
           { key: 'groups.promote', name: 'Groups - Promote Member', method: 'POST', path: '/api/groups/${GROUP_ID}/members/${USER_ID_TARGET}/promote', requiresAuth: true },
           { key: 'groups.demote', name: 'Groups - Demote Admin', method: 'POST', path: '/api/groups/${GROUP_ID}/members/${USER_ID_TARGET}/demote', requiresAuth: true },
+          { key: 'groups.leave', name: 'Groups - Leave Group', method: 'POST', path: '/api/groups/${GROUP_ID}/leave', requiresAuth: true },
+          { key: 'groups.statistics', name: 'Groups - Get Statistics', method: 'GET', path: '/api/groups/${GROUP_ID}/statistics', requiresAuth: true },
+          { key: 'groups.transferOwnership', name: 'Groups - Transfer Ownership', method: 'POST', path: '/api/groups/${GROUP_ID}/transfer-ownership', requiresAuth: true, body: { newOwnerId: '${USER_ID_TARGET}' } },
           { key: 'groups.delete', name: 'Groups - Delete', method: 'DELETE', path: '/api/groups/${GROUP_ID}', requiresAuth: true },
           {
             key: 'message.send',
@@ -1868,6 +1871,9 @@
           { key: 'message.reactions', name: 'Message - Get Reactions', method: 'GET', path: '/api/message/${MESSAGE_ID}/reactions', requiresAuth: true },
           { key: 'message.read', name: 'Message - Mark Read', method: 'POST', path: '/api/message/${MESSAGE_ID}/read', requiresAuth: true },
           { key: 'message.readAll', name: 'Message - Mark All Read', method: 'POST', path: '/api/message/room/${ROOM_ID}/read-all', requiresAuth: true },
+          { key: 'message.pin', name: 'Message - Pin', method: 'POST', path: '/api/message/${MESSAGE_ID}/pin', requiresAuth: true },
+          { key: 'message.unpin', name: 'Message - Unpin', method: 'DELETE', path: '/api/message/${MESSAGE_ID}/pin', requiresAuth: true },
+          { key: 'message.pinned', name: 'Message - Get Pinned', method: 'GET', path: '/api/message/room/${ROOM_ID}/pinned', requiresAuth: true },
           { key: 'message.delete', name: 'Message - Delete', method: 'DELETE', path: '/api/message/${MESSAGE_ID}', requiresAuth: true },
 
           // Notifications
@@ -1907,6 +1913,8 @@
           'POST /api/groups': { name: 'My Group ${TS8}', description: 'Group description', isPrivate: false },
           'PUT /api/groups/:groupId': { name: 'Updated Group ${TS8}', description: 'Updated description', isPrivate: true },
           'POST /api/groups/:groupId/members': { userId: '${USER_ID_TARGET}' },
+          'POST /api/groups/:groupId/leave': {},
+          'POST /api/groups/:groupId/transfer-ownership': { newOwnerId: '${USER_ID_TARGET}' },
 
           'POST /api/friends/request': { userId: '${USER_ID_TARGET}' },
           'POST /api/friends/accept': { requestId: '${REQUEST_ID}' },
