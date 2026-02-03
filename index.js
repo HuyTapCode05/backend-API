@@ -105,7 +105,8 @@ app.get('/api', (req, res) => {
         promoteMember: 'POST /api/groups/:groupId/members/:userId/promote',
         demoteAdmin: 'POST /api/groups/:groupId/members/:userId/demote',
         leaveGroup: 'POST /api/groups/:groupId/leave',
-        getStatistics: 'GET /api/groups/:groupId/statistics'
+        getStatistics: 'GET /api/groups/:groupId/statistics',
+        transferOwnership: 'POST /api/groups/:groupId/transfer-ownership'
       },
       friends: {
         sendRequest: 'POST /api/friends/request',
