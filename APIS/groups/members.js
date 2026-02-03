@@ -307,5 +307,61 @@ router.post('/:groupId/members/:userId/demote', verifyToken, membersLimiter, asy
   }
 });
 
+// Leave Group - Allow members to leave group themselves
+router.post('/:groupId/leave', verifyToken, membersLimiter, async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    if (!isValidObjectId(groupId)) {
+      return sendError(res, 'Invalid group ID format', 'Validation error', 400);
+    }
+
+    const db = getDB();
+    if (!db) {
+      return sendError(res, 'Database not connected', 'Server error', 500);
+    }
+
+    const group = await db.collection('groups').findOne({ _id: new ObjectId(groupId) });
+
+    if (!group) {
+      return sendError(res, 'Group not found', 'Not found', 404);
+    }
+
+    const isMember = group.members.some(m => m.userId === req.userId);
+    
+    if (!isMember) {
+      return sendError(res, 'You are not a member of this group', 'Validation error', 400);
+    }
+
+    // Owner cannot leave group - must transfer ownership or delete group
+    if (group.owner === req.userId) {
+      return sendError(res, 'Group owner cannot leave. Please transfer ownership or delete the group instead.', 'Validation error', 400);
+    }
+
+    // Remove user from members array and admins array (if admin)
+    await db.collection('groups').updateOne(
+      { _id: new ObjectId(groupId) },
+      {
+        $pull: { 
+          members: { userId: req.userId },
+          admins: req.userId
+        },
+        $set: { 
+          memberCount: Math.max(0, group.memberCount - 1),
+          updatedAt: new Date().toISOString()
+        }
+      }
+    );
+
+    return sendSuccess(res, { 
+      groupId,
+      message: 'Successfully left the group'
+    }, 'Left group successfully');
+  } catch (error) {
+    console.error('Leave group error:', error);
+    return sendError(res, error, 'Failed to leave group', 500);
+  }
+});
+
 export default router;
 
