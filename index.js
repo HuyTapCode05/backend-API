@@ -139,6 +139,11 @@ app.get('/api', (req, res) => {
       mentions: {
         getMyMentions: 'GET /api/message/mentions/me',
         getRoomUserMentions: 'GET /api/message/mentions/room/:roomId/user/:userId'
+      },
+      pinMessages: {
+        pin: 'POST /api/message/:messageId/pin',
+        unpin: 'DELETE /api/message/:messageId/pin',
+        getPinned: 'GET /api/message/room/:roomId/pinned'
       }
     }
   });

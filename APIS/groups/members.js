@@ -307,7 +307,6 @@ router.post('/:groupId/members/:userId/demote', verifyToken, membersLimiter, asy
   }
 });
 
-// Leave Group - Allow members to leave group themselves
 router.post('/:groupId/leave', verifyToken, membersLimiter, async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -333,12 +332,10 @@ router.post('/:groupId/leave', verifyToken, membersLimiter, async (req, res) => 
       return sendError(res, 'You are not a member of this group', 'Validation error', 400);
     }
 
-    // Owner cannot leave group - must transfer ownership or delete group
     if (group.owner === req.userId) {
       return sendError(res, 'Group owner cannot leave. Please transfer ownership or delete the group instead.', 'Validation error', 400);
     }
 
-    // Remove user from members array and admins array (if admin)
     await db.collection('groups').updateOne(
       { _id: new ObjectId(groupId) },
       {

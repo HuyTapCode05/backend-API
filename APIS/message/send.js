@@ -134,7 +134,6 @@ router.post('/send', verifyToken, messageLimiter, async (req, res) => {
 
     await db.collection('messages').insertOne(message);
 
-    // Create notifications for mentioned users (excluding the sender)
     if (mentions.length > 0) {
       const notificationPromises = mentions
         .filter(m => m.userId !== req.userId)

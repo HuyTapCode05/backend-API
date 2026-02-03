@@ -40,7 +40,6 @@ router.get('/:groupId/statistics', verifyToken, statisticsLimiter, async (req, r
     const isAdmin = group.admins.includes(req.userId);
     const isOwner = group.owner === req.userId;
 
-    // Only members can view statistics
     if (group.isPrivate && !isMember) {
       return sendError(res, 'Access denied. This is a private group.', 'Forbidden', 403);
     }
@@ -51,10 +50,8 @@ router.get('/:groupId/statistics', verifyToken, statisticsLimiter, async (req, r
     const last7days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const last30days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Get total messages count
     const totalMessages = await db.collection('messages').countDocuments({ roomId: groupIdStr });
 
-    // Get messages by type
     const messagesByType = await db.collection('messages').aggregate([
       { $match: { roomId: groupIdStr } },
       {
@@ -84,7 +81,6 @@ router.get('/:groupId/statistics', verifyToken, statisticsLimiter, async (req, r
       }
     });
 
-    // Get messages in time periods
     const messages24h = await db.collection('messages').countDocuments({
       roomId: groupIdStr,
       createdAt: { $gte: last24h.toISOString() }
@@ -100,7 +96,6 @@ router.get('/:groupId/statistics', verifyToken, statisticsLimiter, async (req, r
       createdAt: { $gte: last30days.toISOString() }
     });
 
-    // Get top contributors (users who sent most messages)
     const topContributors = await db.collection('messages').aggregate([
       { $match: { roomId: groupIdStr } },
       {
@@ -113,7 +108,6 @@ router.get('/:groupId/statistics', verifyToken, statisticsLimiter, async (req, r
       { $limit: 10 }
     ]).toArray();
 
-    // Get user info for top contributors
     const contributorUserIds = topContributors.map(c => new ObjectId(c._id));
     const contributors = await db.collection('users')
       .find({ _id: { $in: contributorUserIds } })
@@ -134,14 +128,12 @@ router.get('/:groupId/statistics', verifyToken, statisticsLimiter, async (req, r
       messageCount: c.messageCount
     }));
 
-    // Get last activity (most recent message)
     const lastMessage = await db.collection('messages')
       .findOne(
         { roomId: groupIdStr },
-        { sort: { createdAt: -1 }, projection: { createdAt: 1, userId: 1, type: 1 } }
+        { sort: { createdAt: -1 }, projection: {         createdAt: 1, userId: 1, type: 1 } }
       );
 
-    // Get new members in time periods
     const newMembers7days = group.members.filter(m => {
       const joinedAt = new Date(m.joinedAt);
       return joinedAt >= last7days;
@@ -152,11 +144,8 @@ router.get('/:groupId/statistics', verifyToken, statisticsLimiter, async (req, r
       return joinedAt >= last30days;
     }).length;
 
-    // Calculate average messages per day (last 30 days)
     const avgMessagesPerDay = messages30days > 0 ? (messages30days / 30).toFixed(2) : 0;
 
-    // Get most active day (by message count per day in last 30 days)
-    // Since createdAt is ISO string, extract date part (YYYY-MM-DD)
     const dailyActivity = await db.collection('messages').aggregate([
       {
         $match: {

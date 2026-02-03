@@ -139,7 +139,6 @@ router.delete('/:groupId', verifyToken, updateGroupLimiter, async (req, res) => 
   }
 });
 
-// Transfer Group Ownership
 router.post('/:groupId/transfer-ownership', verifyToken, updateGroupLimiter, async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -164,23 +163,19 @@ router.post('/:groupId/transfer-ownership', verifyToken, updateGroupLimiter, asy
       return sendError(res, 'Group not found', 'Not found', 404);
     }
 
-    // Only current owner can transfer ownership
     if (group.owner !== req.userId) {
       return sendError(res, 'Only group owner can transfer ownership', 'Forbidden', 403);
     }
 
-    // Cannot transfer to yourself
     if (newOwnerId === req.userId) {
       return sendError(res, 'Cannot transfer ownership to yourself', 'Validation error', 400);
     }
 
-    // Check if new owner is a member of the group
     const isMember = group.members.some(m => m.userId === newOwnerId);
     if (!isMember) {
       return sendError(res, 'New owner must be a member of the group', 'Validation error', 400);
     }
 
-    // Verify new owner user exists
     const newOwner = await db.collection('users')
       .findOne({ _id: new ObjectId(newOwnerId) }, { projection: { password: 0, username: 1, avatar: 1 } });
 
@@ -188,8 +183,6 @@ router.post('/:groupId/transfer-ownership', verifyToken, updateGroupLimiter, asy
       return sendError(res, 'New owner user not found', 'Not found', 404);
     }
 
-    // Update group ownership
-    // Build update operations
     const updateOps = {
       $set: {
         owner: newOwnerId,
@@ -197,23 +190,19 @@ router.post('/:groupId/transfer-ownership', verifyToken, updateGroupLimiter, asy
       }
     };
 
-    // If old owner was in admins array, remove them
     if (group.admins.includes(req.userId)) {
       updateOps.$pull = { admins: req.userId };
     }
 
-    // If new owner is not already an admin, add them
     if (!group.admins.includes(newOwnerId)) {
       updateOps.$addToSet = { admins: newOwnerId };
     }
 
-    // Update group ownership and admin arrays
     await db.collection('groups').updateOne(
       { _id: new ObjectId(groupId) },
       updateOps
     );
 
-    // Update member role in members array
     await db.collection('groups').updateOne(
       { _id: new ObjectId(groupId) },
       {
@@ -229,9 +218,6 @@ router.post('/:groupId/transfer-ownership', verifyToken, updateGroupLimiter, asy
         ]
       }
     );
-
-    // Get updated group
-    const updatedGroup = await db.collection('groups').findOne({ _id: new ObjectId(groupId) });
 
     return sendSuccess(res, {
       groupId: groupId,
