@@ -1915,6 +1915,8 @@
           'POST /api/groups/:groupId/members': { userId: '${USER_ID_TARGET}' },
           'POST /api/groups/:groupId/leave': {},
           'POST /api/groups/:groupId/transfer-ownership': { newOwnerId: '${USER_ID_TARGET}' },
+          'POST /api/groups/:groupId/invite-code': { expiresIn: 24 },
+          'POST /api/groups/join-by-code': { code: 'INVITE_CODE_HERE' },
 
           'POST /api/friends/request': { userId: '${USER_ID_TARGET}' },
           'POST /api/friends/accept': { requestId: '${REQUEST_ID}' },
@@ -1948,6 +1950,10 @@
           'POST /api/groups': (json) => {
             const gid = json?._id || json?.data?._id || json?.data?.group?._id;
             if (gid) setVar('GROUP_ID', gid);
+          },
+          'POST /api/groups/:groupId/invite-code': (json) => {
+            const code = json?.data?.code || json?.code;
+            if (code) setVar('INVITE_CODE', code);
           },
           'POST /api/message/send': (json) => {
             const mid = json?.data?._id || json?._id;

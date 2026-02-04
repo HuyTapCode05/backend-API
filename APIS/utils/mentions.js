@@ -1,9 +1,5 @@
 import { ObjectId } from 'mongodb';
 
-/**
- * Parse mentions from text (format: @username)
- * Returns array of unique usernames mentioned
- */
 export function parseMentions(text) {
   if (!text || typeof text !== 'string') return [];
   
@@ -21,14 +17,11 @@ export function parseMentions(text) {
   return mentions;
 }
 
-/**
- * Validate if mentioned usernames exist in the room/group
- */
+
 export async function validateMentions(db, mentionedUsernames, roomId, isGroup = false) {
   if (!mentionedUsernames || mentionedUsernames.length === 0) return [];
   
   if (isGroup) {
-    // For groups, check if users are members
     const group = await db.collection('groups').findOne({ _id: new ObjectId(roomId) });
     if (!group) return [];
     
@@ -43,7 +36,6 @@ export async function validateMentions(db, mentionedUsernames, roomId, isGroup =
       username: u.username
     }));
   } else {
-    // For direct messages, just check if users exist
     const users = await db.collection('users').find({
       username: { $in: mentionedUsernames }
     }).project({ _id: 1, username: 1 }).toArray();

@@ -17,7 +17,6 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Verify email endpoint
 router.post('/verify-email', async (req, res) => {
   try {
     const { token, code } = req.body;
@@ -50,7 +49,7 @@ router.post('/verify-email', async (req, res) => {
         email: decoded.email
       });
     } 
-    // Verify by code
+
     else if (code) {
       verification = await db.collection('email_verifications').findOne({
         code: code.toString()
@@ -61,7 +60,6 @@ router.post('/verify-email', async (req, res) => {
       return sendError(res, 'Verification token or code not found', 'Validation error', 404);
     }
 
-    // Update user email verified status
     await db.collection('users').updateOne(
       { _id: new ObjectId(verification.userId) },
       { $set: { emailVerified: true } }

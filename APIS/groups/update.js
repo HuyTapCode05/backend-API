@@ -237,4 +237,3 @@ router.post('/:groupId/transfer-ownership', verifyToken, updateGroupLimiter, asy
 });
 
 export default router;
-

@@ -16,7 +16,6 @@ const notificationsLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// GET /api/notifications/unread-count
 router.get('/unread-count', verifyToken, notificationsLimiter, async (req, res) => {
   try {
     const db = getDB();

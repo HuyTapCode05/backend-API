@@ -106,7 +106,11 @@ app.get('/api', (req, res) => {
         demoteAdmin: 'POST /api/groups/:groupId/members/:userId/demote',
         leaveGroup: 'POST /api/groups/:groupId/leave',
         getStatistics: 'GET /api/groups/:groupId/statistics',
-        transferOwnership: 'POST /api/groups/:groupId/transfer-ownership'
+        transferOwnership: 'POST /api/groups/:groupId/transfer-ownership',
+        generateInviteCode: 'POST /api/groups/:groupId/invite-code',
+        joinByCode: 'POST /api/groups/join-by-code',
+        getInviteCodes: 'GET /api/groups/:groupId/invite-codes',
+        deactivateInviteCode: 'DELETE /api/groups/:groupId/invite-code/:code'
       },
       friends: {
         sendRequest: 'POST /api/friends/request',
