@@ -137,7 +137,11 @@ app.get('/api', (req, res) => {
         getMuteStatus: 'GET /api/groups/:groupId/mute-status',
         getMutedGroups: 'GET /api/groups/muted',
         getReports: 'GET /api/groups/:groupId/reports?status=open|resolved|rejected|all&limit=50&skip=0',
-        resolveReport: 'POST /api/groups/:groupId/reports/:reportId/resolve'
+        resolveReport: 'POST /api/groups/:groupId/reports/:reportId/resolve',
+        lock: 'POST /api/groups/:groupId/lock',
+        unlock: 'POST /api/groups/:groupId/unlock',
+        removeLock: 'DELETE /api/groups/:groupId/lock',
+        lockStatus: 'GET /api/groups/:groupId/lock-status'
       },
       friends: {
         sendRequest: 'POST /api/friends/request',

@@ -131,5 +131,3 @@ router.post('/:groupId/reports/:reportId/resolve', verifyToken, reportsLimiter, 
 });
 
 export default router;
-
-

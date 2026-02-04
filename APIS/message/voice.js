@@ -7,6 +7,7 @@ import { getDB } from '../../config/database.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 import { verifyToken } from '../Auth/middleware.js';
 import { isValidRoomId, sanitizeString, whitelistObject } from '../utils/validation.js';
+import { assertRoomUnlocked } from '../utils/groupLock.js';
 import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
@@ -107,6 +108,11 @@ router.post('/send', verifyToken, voiceLimiter, async (req, res) => {
     const db = getDB();
     if (!db) {
       return sendError(res, 'Database not connected', 'Server error', 500);
+    }
+
+    const unlockCheck = await assertRoomUnlocked(db, roomId, req.userId);
+    if (!unlockCheck.ok) {
+      return sendError(res, unlockCheck.error, 'Locked', unlockCheck.status);
     }
 
     const user = await db.collection('users').findOne(
