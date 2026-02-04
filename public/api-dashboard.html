@@ -1917,6 +1917,10 @@
           'POST /api/groups/:groupId/transfer-ownership': { newOwnerId: '${USER_ID_TARGET}' },
           'POST /api/groups/:groupId/invite-code': { expiresIn: 24 },
           'POST /api/groups/join-by-code': { code: 'INVITE_CODE_HERE' },
+          'POST /api/groups/:groupId/mute': { duration: 24 },
+          'POST /api/groups/:groupId/unmute': {},
+          'GET /api/groups/:groupId/mute-status': {},
+          'GET /api/groups/muted': {},
 
           'POST /api/friends/request': { userId: '${USER_ID_TARGET}' },
           'POST /api/friends/accept': { requestId: '${REQUEST_ID}' },

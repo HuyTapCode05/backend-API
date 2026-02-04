@@ -115,7 +115,11 @@ app.get('/api', (req, res) => {
         generateInviteCode: 'POST /api/groups/:groupId/invite-code',
         joinByCode: 'POST /api/groups/join-by-code',
         getInviteCodes: 'GET /api/groups/:groupId/invite-codes',
-        deactivateInviteCode: 'DELETE /api/groups/:groupId/invite-code/:code'
+        deactivateInviteCode: 'DELETE /api/groups/:groupId/invite-code/:code',
+        muteGroup: 'POST /api/groups/:groupId/mute',
+        unmuteGroup: 'POST /api/groups/:groupId/unmute',
+        getMuteStatus: 'GET /api/groups/:groupId/mute-status',
+        getMutedGroups: 'GET /api/groups/muted'
       },
       friends: {
         sendRequest: 'POST /api/friends/request',

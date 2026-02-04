@@ -6,6 +6,7 @@ import updateRoutes from './update.js';
 import membersRoutes from './members.js';
 import statisticsRoutes from './statistics.js';
 import inviteRoutes from './invite.js';
+import muteRoutes from './mute.js';
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.use('/', updateRoutes);
 router.use('/', membersRoutes);
 router.use('/', statisticsRoutes);
 router.use('/', inviteRoutes);
+router.use('/', muteRoutes);
 
 export default router;
 
