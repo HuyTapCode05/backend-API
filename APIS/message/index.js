@@ -13,6 +13,7 @@ import voiceRoutes from './voice.js';
 import archiveRoutes from './archive.js';
 import editHistoryRoutes from './editHistory.js';
 import forwardRoutes from './forward.js';
+import bulkDeleteRoutes from './bulkDelete.js';
 
 const router = express.Router();
 
@@ -30,6 +31,7 @@ router.use('/voice', voiceRoutes);
 router.use('/', archiveRoutes);
 router.use('/', editHistoryRoutes);
 router.use('/', forwardRoutes);
+router.use('/', bulkDeleteRoutes);
 
 export default router;
 
