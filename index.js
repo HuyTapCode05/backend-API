@@ -52,6 +52,11 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(join(__dirname, 'public', 'api-dashboard.html'));
 });
 
+// Join group by invite code page
+app.get('/join/:code', (req, res) => {
+  res.sendFile(join(__dirname, 'public', 'join.html'));
+});
+
 // API Info endpoint
 app.get('/api', (req, res) => {
   res.json({

@@ -76,7 +76,8 @@ router.post('/:groupId/invite-code', verifyToken, inviteLimiter, async (req, res
       groupId: groupId,
       groupName: group.name,
       expiresAt: expiresAt,
-      inviteLink: `/api/groups/join-by-code?code=${inviteCode}`
+      inviteLink: `/join/${inviteCode}`,
+      inviteLinkFull: `${req.protocol}://${req.get('host')}/join/${inviteCode}`
     }, 'Invite code generated successfully');
   } catch (error) {
     console.error('Generate invite code error:', error);

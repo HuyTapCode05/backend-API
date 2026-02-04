@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tham gia nhóm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .status.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .login-form {
+            margin-top: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .link {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💬 Tham gia nhóm</h1>
+        <p class="subtitle" id="subtitle">Đang kiểm tra mã mời...</p>
+        
+        <div id="status" class="status loading" style="display: none;"></div>
+        
+        <div id="loginForm" class="login-form" style="display: none;">
+            <p style="color: #666; margin-bottom: 15px; font-size: 14px;">
+                Vui lòng nhập Access Token để tham gia nhóm
+            </p>
+            <input type="text" id="tokenInput" placeholder="Access Token" />
+            <button onclick="joinGroup()">Tham gia nhóm</button>
+            <div class="link">
+                <a href="/dashboard">Hoặc đăng nhập tại đây</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const codeFromPath = window.location.pathname.split('/').pop();
+        const inviteCode = codeFromPath || urlParams.get('code');
+        
+        if (!inviteCode) {
+            showError('Không tìm thấy mã mời');
+        } else {
+            document.getElementById('subtitle').textContent = `Mã mời: ${inviteCode}`;
+            checkTokenAndJoin();
+        }
+
+        function checkTokenAndJoin() {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                joinGroup(token);
+            } else {
+                showLoginForm();
+            }
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('status').style.display = 'none';
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        function showError(message) {
+            showStatus(message, 'error');
+            document.getElementById('subtitle').textContent = '';
+        }
+
+        async function joinGroup(token) {
+            const accessToken = token || document.getElementById('tokenInput')?.value;
+            
+            if (!accessToken) {
+                showError('Vui lòng nhập Access Token');
+                return;
+            }
+
+            showStatus('Đang tham gia nhóm...', 'loading');
+            document.getElementById('loginForm').style.display = 'none';
+
+            try {
+                const API_BASE = localStorage.getItem('apiBase') || 'http://103.149.252.114:3000';
+                const response = await fetch(`${API_BASE}/api/groups/join-by-code`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify({ code: inviteCode })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showStatus(`✅ Thành công! Đã tham gia nhóm: ${data.data.groupName}`, 'success');
+                    document.getElementById('subtitle').textContent = '';
+                    
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    showError(data.message || 'Không thể tham gia nhóm');
+                    if (response.status === 401) {
+                        showLoginForm();
+                    }
+                }
+            } catch (error) {
+                showError('Lỗi kết nối: ' + error.message);
+                showLoginForm();
+            }
+        }
+    </script>
+</body>
+</html>
+
