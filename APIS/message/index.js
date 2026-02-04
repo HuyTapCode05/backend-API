@@ -11,6 +11,7 @@ import mentionsRoutes from './mentions/index.js';
 import pinRoutes from './pin.js';
 import voiceRoutes from './voice.js';
 import archiveRoutes from './archive.js';
+import editHistoryRoutes from './editHistory.js';
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.use('/', pinRoutes);
 router.use('/mentions', mentionsRoutes);
 router.use('/voice', voiceRoutes);
 router.use('/', archiveRoutes);
+router.use('/', editHistoryRoutes);
 
 export default router;
 

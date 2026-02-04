@@ -103,7 +103,8 @@ app.get('/api', (req, res) => {
         archiveRoom: 'POST /api/message/room/:roomId/archive',
         unarchiveRoom: 'POST /api/message/room/:roomId/unarchive',
         getArchiveStatus: 'GET /api/message/room/:roomId/archive-status',
-        getArchivedRooms: 'GET /api/message/archived'
+        getArchivedRooms: 'GET /api/message/archived',
+        getEditHistory: 'GET /api/message/:messageId/edit-history'
       },
       groups: {
         create: 'POST /api/groups',

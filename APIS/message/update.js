@@ -89,6 +89,15 @@ router.put('/:messageId', verifyToken, messageUpdateLimiter, async (req, res) =>
       return sendError(res, 'Message not found or unauthorized', 'Not found', 404);
     }
 
+    const oldText = message.text;
+    const editHistory = message.editHistory || [];
+
+    editHistory.push({
+      text: oldText,
+      editedAt: message.updatedAt || message.createdAt,
+      editedBy: req.userId
+    });
+
     const updateResult = await db.collection('messages').updateOne(
       { 
         _id: new ObjectId(messageId),
@@ -97,7 +106,9 @@ router.put('/:messageId', verifyToken, messageUpdateLimiter, async (req, res) =>
       {
         $set: {
           text,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
+          editHistory: editHistory,
+          isEdited: true
         }
       }
     );
