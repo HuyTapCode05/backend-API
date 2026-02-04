@@ -119,7 +119,10 @@ app.get('/api', (req, res) => {
       notifications: {
         get: 'GET /api/notifications?unreadOnly=true&type=friend_request',
         markRead: 'PUT /api/notifications/:notificationId/read',
-        markAllRead: 'PUT /api/notifications/read-all'
+        markAllRead: 'PUT /api/notifications/read-all',
+        unreadCount: 'GET /api/notifications/unread-count',
+        delete: 'DELETE /api/notifications/:notificationId',
+        clear: 'DELETE /api/notifications/clear?mode=all|read|unread'
       },
       messageReactions: {
         add: 'POST /api/message/:messageId/reaction',
