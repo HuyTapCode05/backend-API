@@ -30,6 +30,22 @@ export function initWebSocket(wss) {
             handleLeave(userId);
             break;
 
+          case 'call_offer':
+            handleCallOffer(userId, payload);
+            break;
+
+          case 'call_answer':
+            handleCallAnswer(userId, payload);
+            break;
+
+          case 'call_ice':
+            handleCallICE(userId, payload);
+            break;
+
+          case 'call_end':
+            handleCallEnd(userId, payload);
+            break;
+
           default:
             ws.send(JSON.stringify({
               type: 'error',
@@ -265,5 +281,103 @@ function broadcastToRoom(roomId, message, excludeUserId = null) {
     }
   });
   return sentCount;
+}
+
+function sendToUser(userId, message) {
+  const user = activeUsers.get(userId);
+  if (user && user.ws.readyState === 1) {
+    try {
+      user.ws.send(JSON.stringify(message));
+      return true;
+    } catch (error) {
+      console.error('Error sending message to user:', error);
+      return false;
+    }
+  }
+  return false;
+}
+
+function handleCallOffer(userId, payload) {
+  const { callId, recipientId, offer, callType } = payload;
+  
+  if (!callId || !recipientId || !offer) {
+    return;
+  }
+
+  const sent = sendToUser(recipientId, {
+    type: 'call_offer',
+    data: {
+      callId,
+      callerId: userId,
+      offer,
+      callType: callType || 'voice'
+    }
+  });
+
+  if (sent) {
+    console.log(`📞 Call offer sent from ${userId} to ${recipientId}`);
+  }
+}
+
+function handleCallAnswer(userId, payload) {
+  const { callId, callerId, answer } = payload;
+  
+  if (!callId || !callerId || !answer) {
+    return;
+  }
+
+  const sent = sendToUser(callerId, {
+    type: 'call_answer',
+    data: {
+      callId,
+      answererId: userId,
+      answer
+    }
+  });
+
+  if (sent) {
+    console.log(`✅ Call answer sent from ${userId} to ${callerId}`);
+  }
+}
+
+function handleCallICE(userId, payload) {
+  const { callId, targetUserId, candidate } = payload;
+  
+  if (!callId || !targetUserId || !candidate) {
+    return;
+  }
+
+  const sent = sendToUser(targetUserId, {
+    type: 'call_ice',
+    data: {
+      callId,
+      senderId: userId,
+      candidate
+    }
+  });
+
+  if (sent) {
+    console.log(`🧊 ICE candidate sent from ${userId} to ${targetUserId}`);
+  }
+}
+
+function handleCallEnd(userId, payload) {
+  const { callId, targetUserId } = payload;
+  
+  if (!callId || !targetUserId) {
+    return;
+  }
+
+  const sent = sendToUser(targetUserId, {
+    type: 'call_end',
+    data: {
+      callId,
+      endedBy: userId
+    }
+  });
+
+  if (sent) {
+    console.log(`📴 Call ended by ${userId}`);
+  }
 }
 

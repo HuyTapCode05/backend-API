@@ -1922,6 +1922,13 @@
           'GET /api/groups/:groupId/mute-status': {},
           'GET /api/groups/muted': {},
 
+          'POST /api/calls/initiate': { recipientId: '${USER_ID_TARGET}', callType: 'voice', roomId: '${ROOM_ID}' },
+          'POST /api/calls/:callId/accept': {},
+          'POST /api/calls/:callId/reject': { reason: 'Busy' },
+          'POST /api/calls/:callId/end': { duration: 120 },
+          'GET /api/calls/:callId': {},
+          'GET /api/calls/history': { limit: 50, offset: 0 },
+
           'POST /api/friends/request': { userId: '${USER_ID_TARGET}' },
           'POST /api/friends/accept': { requestId: '${REQUEST_ID}' },
           'POST /api/friends/reject': { requestId: '${REQUEST_ID}' }
@@ -1954,6 +1961,10 @@
           'POST /api/groups': (json) => {
             const gid = json?._id || json?.data?._id || json?.data?.group?._id;
             if (gid) setVar('GROUP_ID', gid);
+          },
+          'POST /api/calls/initiate': (json) => {
+            const cid = json?.data?.callId || json?.callId;
+            if (cid) setVar('CALL_ID', cid);
           },
           'POST /api/groups/:groupId/invite-code': (json) => {
             const code = json?.data?.code || json?.code;

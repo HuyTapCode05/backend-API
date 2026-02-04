@@ -13,6 +13,7 @@ import messageRoutes from './APIS/message/index.js';
 import groupsRoutes from './APIS/groups/index.js';
 import friendsRoutes from './APIS/friends/index.js';
 import notificationsRoutes from './APIS/notifications/index.js';
+import callsRoutes from './APIS/calls/index.js';
 import { initWebSocket } from './config/websocket.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -160,6 +161,18 @@ app.get('/api', (req, res) => {
         pin: 'POST /api/message/:messageId/pin',
         unpin: 'DELETE /api/message/:messageId/pin',
         getPinned: 'GET /api/message/room/:roomId/pinned'
+      },
+      calls: {
+        initiate: 'POST /api/calls/initiate',
+        accept: 'POST /api/calls/:callId/accept',
+        reject: 'POST /api/calls/:callId/reject',
+        end: 'POST /api/calls/:callId/end',
+        getCall: 'GET /api/calls/:callId',
+        getHistory: 'GET /api/calls/history'
+      },
+      websocket: {
+        connect: 'WS /',
+        events: ['join', 'message', 'typing', 'leave', 'call_offer', 'call_answer', 'call_ice', 'call_end']
       }
     }
   });
@@ -171,7 +184,8 @@ app.use('/api/users', usersRoutes);    // All user routes (profile, avatar, sear
 app.use('/api/message', messageRoutes);    // All message routes (upload, send, get, update, delete, search, reactions)
 app.use('/api/groups', groupsRoutes);  // All group routes (create, list, get, update, delete, members)
 app.use('/api/friends', friendsRoutes);  // All friend routes (request, accept, reject, list)
-app.use('/api/notifications', notificationsRoutes);  // All notification routes (get, mark as read)   
+app.use('/api/notifications', notificationsRoutes);  // All notification routes (get, mark as read)
+app.use('/api/calls', callsRoutes);  // All call routes (initiate, accept, reject, end, history)   
 
 // Health check
 app.get('/api/health', (req, res) => {

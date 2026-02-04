@@ -14,4 +14,3 @@ router.use('/', listRequestsRoutes);
 router.use('/', listRoutes);
 
 export default router;
-
