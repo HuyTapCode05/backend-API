@@ -5,6 +5,8 @@ import avatarRoutes from './avatar.js';
 import searchRoutes from './search.js';
 import presenceRoutes from './presence/index.js';
 import blockRoutes from './block/index.js';
+import pinRoutes from './pin.js';
+import hiddenRoomsRoutes from './hiddenRooms.js';
 
 const router = express.Router();
 
@@ -13,6 +15,8 @@ router.use('/', avatarRoutes);
 router.use('/', searchRoutes);
 router.use('/', presenceRoutes);
 router.use('/', blockRoutes);
+router.use('/', pinRoutes);
+router.use('/', hiddenRoomsRoutes);
 
 export default router;
 

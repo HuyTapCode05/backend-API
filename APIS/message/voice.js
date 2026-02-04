@@ -8,6 +8,7 @@ import { sendSuccess, sendError } from '../utils/response.js';
 import { verifyToken } from '../Auth/middleware.js';
 import { isValidRoomId, sanitizeString, whitelistObject } from '../utils/validation.js';
 import { assertRoomUnlocked } from '../utils/groupLock.js';
+import { assertPinVerified, isRoomHiddenForUser } from '../utils/userPin.js';
 import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
@@ -113,6 +114,12 @@ router.post('/send', verifyToken, voiceLimiter, async (req, res) => {
     const unlockCheck = await assertRoomUnlocked(db, roomId, req.userId);
     if (!unlockCheck.ok) {
       return sendError(res, unlockCheck.error, 'Locked', unlockCheck.status);
+    }
+
+    const hidden = await isRoomHiddenForUser(req.userId, roomId);
+    if (hidden) {
+      const ok = await assertPinVerified(req, res);
+      if (!ok) return;
     }
 
     const user = await db.collection('users').findOne(

@@ -1825,6 +1825,15 @@
           { key: 'users.blocked', name: 'Users - List Blocked', method: 'GET', path: '/api/users/blocked?limit=50&skip=0', requiresAuth: true },
           { key: 'users.blockCheck', name: 'Users - Check Block Status', method: 'GET', path: '/api/users/check/${USER_ID_TARGET}', requiresAuth: true },
 
+          // PIN + Hidden Rooms (Zalo-like)
+          { key: 'users.pinSet', name: 'Users - Set PIN', method: 'POST', path: '/api/users/pin/set', requiresAuth: true, body: { pin: '1234', oldPin: '' } },
+          { key: 'users.pinVerify', name: 'Users - Verify PIN', method: 'POST', path: '/api/users/pin/verify', requiresAuth: true, body: { pin: '1234' } },
+          { key: 'users.pinStatus', name: 'Users - PIN Status', method: 'GET', path: '/api/users/pin/status', requiresAuth: true },
+          { key: 'users.hideRoom', name: 'Users - Hide Room', method: 'POST', path: '/api/users/hidden/rooms/${ROOM_ID}/hide', requiresAuth: true },
+          { key: 'users.unhideRoom', name: 'Users - Unhide Room', method: 'POST', path: '/api/users/hidden/rooms/${ROOM_ID}/unhide', requiresAuth: true },
+          { key: 'users.hiddenRooms', name: 'Users - List Hidden Rooms', method: 'GET', path: '/api/users/hidden/rooms?limit=50&skip=0', requiresAuth: true },
+          { key: 'users.hiddenStatus', name: 'Users - Hidden Status', method: 'GET', path: '/api/users/hidden/rooms/${ROOM_ID}/status', requiresAuth: true },
+
           // Groups
           {
             key: 'groups.create',
@@ -1915,6 +1924,8 @@
           'PUT /api/users/status': { status: 'online' },
           'POST /api/users/block': { userId: '${USER_ID_TARGET}' },
           'POST /api/users/unblock': { userId: '${USER_ID_TARGET}' },
+          'POST /api/users/pin/set': { pin: '1234', oldPin: '' },
+          'POST /api/users/pin/verify': { pin: '1234' },
 
           'POST /api/message/send': { roomId: '${ROOM_ID}', text: 'Hello ${TS8}' },
           'PUT /api/message/:messageId': { text: 'Updated ${TS8}' },
@@ -2002,6 +2013,10 @@
             const rid = first?._id || first?.id;
             if (rid) setVar('REPORT_ID', rid);
           },
+          'POST /api/users/pin/verify': (json) => {
+            const pt = json?.data?.pinToken;
+            if (pt) setVar('PIN_TOKEN', pt);
+          },
           'POST /api/message/send': (json) => {
             const mid = json?.data?._id || json?._id;
             if (mid) setVar('MESSAGE_ID', mid);
@@ -2015,6 +2030,7 @@
         if (!vars.REQUEST_ID) vars.REQUEST_ID = '';
         if (!vars.FRIEND_ID) vars.FRIEND_ID = '';
         if (!vars.REPORT_ID) vars.REPORT_ID = '';
+        if (!vars.PIN_TOKEN) vars.PIN_TOKEN = '';
 
         function saveVars() {
           localStorage.setItem('apiVars', JSON.stringify(vars));
@@ -2058,7 +2074,8 @@
               .replaceAll('${NOTIFICATION_ID}', vars.NOTIFICATION_ID || '')
               .replaceAll('${REQUEST_ID}', vars.REQUEST_ID || '')
               .replaceAll('${FRIEND_ID}', vars.FRIEND_ID || '')
-              .replaceAll('${REPORT_ID}', vars.REPORT_ID || '');
+              .replaceAll('${REPORT_ID}', vars.REPORT_ID || '')
+              .replaceAll('${PIN_TOKEN}', vars.PIN_TOKEN || '');
           }
           if (Array.isArray(value)) return value.map(substituteTemplate);
           if (value && typeof value === 'object') {
@@ -2166,6 +2183,10 @@
               return;
             }
             headers['Authorization'] = `Bearer ${accessToken}`;
+          }
+          // PIN token (for hidden chat access)
+          if (vars.PIN_TOKEN) {
+            headers['x-pin-token'] = vars.PIN_TOKEN;
           }
 
           const options = { method, headers };

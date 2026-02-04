@@ -89,6 +89,14 @@ app.get('/api', (req, res) => {
         unblockUser: 'POST /api/users/unblock',
         getBlockedUsers: 'GET /api/users/blocked',
         checkBlockStatus: 'GET /api/users/check/:userId'
+        ,
+        pinSet: 'POST /api/users/pin/set',
+        pinVerify: 'POST /api/users/pin/verify',
+        pinStatus: 'GET /api/users/pin/status',
+        hideRoom: 'POST /api/users/hidden/rooms/:roomId/hide',
+        unhideRoom: 'POST /api/users/hidden/rooms/:roomId/unhide',
+        hiddenRooms: 'GET /api/users/hidden/rooms?limit=50&skip=0 (requires x-pin-token)',
+        hiddenStatus: 'GET /api/users/hidden/rooms/:roomId/status'
       },
       message: {
         upload: 'POST /api/message/upload',
