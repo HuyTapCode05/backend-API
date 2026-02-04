@@ -1915,6 +1915,7 @@
           'GET /api/message/room/:roomId/archive-status': {},
           'GET /api/message/archived': { limit: 50, offset: 0 },
           'GET /api/message/:messageId/edit-history': {},
+          'POST /api/message/:messageId/forward': { targetRoomIds: ['${GROUP_ID}'], text: 'Forwarded message' },
 
           'POST /api/groups': { name: 'My Group ${TS8}', description: 'Group description', isPrivate: false },
           'PUT /api/groups/:groupId': { name: 'Updated Group ${TS8}', description: 'Updated description', isPrivate: true },
