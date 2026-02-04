@@ -110,7 +110,8 @@ app.get('/api', (req, res) => {
         bulkDeleteRoom: 'POST /api/message/room/:roomId/bulk-delete',
         star: 'POST /api/message/:messageId/star',
         unstar: 'DELETE /api/message/:messageId/star',
-        getStarred: 'GET /api/message/starred?limit=50&skip=0&roomId='
+        getStarred: 'GET /api/message/starred?limit=50&skip=0&roomId=',
+        report: 'POST /api/message/:messageId/report'
       },
       groups: {
         create: 'POST /api/groups',
@@ -133,7 +134,9 @@ app.get('/api', (req, res) => {
         muteGroup: 'POST /api/groups/:groupId/mute',
         unmuteGroup: 'POST /api/groups/:groupId/unmute',
         getMuteStatus: 'GET /api/groups/:groupId/mute-status',
-        getMutedGroups: 'GET /api/groups/muted'
+        getMutedGroups: 'GET /api/groups/muted',
+        getReports: 'GET /api/groups/:groupId/reports?status=open|resolved|rejected|all&limit=50&skip=0',
+        resolveReport: 'POST /api/groups/:groupId/reports/:reportId/resolve'
       },
       friends: {
         sendRequest: 'POST /api/friends/request',

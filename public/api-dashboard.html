@@ -1849,6 +1849,8 @@
           { key: 'groups.leave', name: 'Groups - Leave Group', method: 'POST', path: '/api/groups/${GROUP_ID}/leave', requiresAuth: true },
           { key: 'groups.statistics', name: 'Groups - Get Statistics', method: 'GET', path: '/api/groups/${GROUP_ID}/statistics', requiresAuth: true },
           { key: 'groups.transferOwnership', name: 'Groups - Transfer Ownership', method: 'POST', path: '/api/groups/${GROUP_ID}/transfer-ownership', requiresAuth: true, body: { newOwnerId: '${USER_ID_TARGET}' } },
+          { key: 'groups.reports', name: 'Groups - Reports (Admin)', method: 'GET', path: '/api/groups/${GROUP_ID}/reports?status=open&limit=50&skip=0', requiresAuth: true },
+          { key: 'groups.resolveReport', name: 'Groups - Resolve Report (Admin)', method: 'POST', path: '/api/groups/${GROUP_ID}/reports/${REPORT_ID}/resolve', requiresAuth: true, body: { status: 'resolved', resolutionNote: 'Handled' } },
           { key: 'groups.delete', name: 'Groups - Delete', method: 'DELETE', path: '/api/groups/${GROUP_ID}', requiresAuth: true },
           {
             key: 'message.send',
@@ -1877,6 +1879,7 @@
           { key: 'message.star', name: 'Message - Star', method: 'POST', path: '/api/message/${MESSAGE_ID}/star', requiresAuth: true },
           { key: 'message.unstar', name: 'Message - Unstar', method: 'DELETE', path: '/api/message/${MESSAGE_ID}/star', requiresAuth: true },
           { key: 'message.starred', name: 'Message - Get Starred', method: 'GET', path: '/api/message/starred?limit=50&skip=0&roomId=', requiresAuth: true },
+          { key: 'message.report', name: 'Message - Report', method: 'POST', path: '/api/message/${MESSAGE_ID}/report', requiresAuth: true, body: { reason: 'spam', description: 'Spam content' } },
           { key: 'message.delete', name: 'Message - Delete', method: 'DELETE', path: '/api/message/${MESSAGE_ID}', requiresAuth: true },
 
           // Notifications
@@ -1921,6 +1924,7 @@
           'POST /api/message/:messageId/forward': { targetRoomIds: ['${GROUP_ID}'], text: 'Forwarded message' },
           'POST /api/message/bulk-delete': { messageIds: ['${MESSAGE_ID}'], roomId: '${ROOM_ID}' },
           'POST /api/message/room/:roomId/bulk-delete': { messageIds: ['${MESSAGE_ID}'], beforeDate: '2024-01-01T00:00:00Z' },
+          'POST /api/message/:messageId/report': { reason: 'spam', description: 'Spam content' },
 
           'POST /api/groups': { name: 'My Group ${TS8}', description: 'Group description', isPrivate: false },
           'PUT /api/groups/:groupId': { name: 'Updated Group ${TS8}', description: 'Updated description', isPrivate: true },
@@ -1933,6 +1937,8 @@
           'POST /api/groups/:groupId/unmute': {},
           'GET /api/groups/:groupId/mute-status': {},
           'GET /api/groups/muted': {},
+          'GET /api/groups/:groupId/reports': {},
+          'POST /api/groups/:groupId/reports/:reportId/resolve': { status: 'resolved', resolutionNote: 'Handled' },
 
           'POST /api/calls/initiate': { recipientId: '${USER_ID_TARGET}', callType: 'voice', roomId: '${ROOM_ID}' },
           'POST /api/calls/:callId/accept': {},
@@ -1981,6 +1987,11 @@
             const code = json?.data?.code || json?.code;
             if (code) setVar('INVITE_CODE', code);
           },
+          'GET /api/groups/:groupId/reports': (json) => {
+            const first = json?.data?.reports?.[0];
+            const rid = first?._id || first?.id;
+            if (rid) setVar('REPORT_ID', rid);
+          },
           'POST /api/message/send': (json) => {
             const mid = json?.data?._id || json?._id;
             if (mid) setVar('MESSAGE_ID', mid);
@@ -1993,6 +2004,7 @@
         if (!vars.NOTIFICATION_ID) vars.NOTIFICATION_ID = '';
         if (!vars.REQUEST_ID) vars.REQUEST_ID = '';
         if (!vars.FRIEND_ID) vars.FRIEND_ID = '';
+        if (!vars.REPORT_ID) vars.REPORT_ID = '';
 
         function saveVars() {
           localStorage.setItem('apiVars', JSON.stringify(vars));
@@ -2035,7 +2047,8 @@
               .replaceAll('${USER_ID_TARGET}', vars.USER_ID_TARGET || '')
               .replaceAll('${NOTIFICATION_ID}', vars.NOTIFICATION_ID || '')
               .replaceAll('${REQUEST_ID}', vars.REQUEST_ID || '')
-              .replaceAll('${FRIEND_ID}', vars.FRIEND_ID || '');
+              .replaceAll('${FRIEND_ID}', vars.FRIEND_ID || '')
+              .replaceAll('${REPORT_ID}', vars.REPORT_ID || '');
           }
           if (Array.isArray(value)) return value.map(substituteTemplate);
           if (value && typeof value === 'object') {

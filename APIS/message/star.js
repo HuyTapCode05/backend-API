@@ -16,7 +16,6 @@ const starLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-async f
 async function assertCanAccessMessage(db, message, userId) {
   if (message?.roomId && isValidObjectId(message.roomId)) {
     const group = await db.collection('groups').findOne({ _id: new ObjectId(message.roomId) });

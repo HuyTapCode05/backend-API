@@ -15,6 +15,7 @@ import editHistoryRoutes from './editHistory.js';
 import forwardRoutes from './forward.js';
 import bulkDeleteRoutes from './bulkDelete.js';
 import starRoutes from './star.js';
+import reportRoutes from './report.js';
 
 const router = express.Router();
 
@@ -34,6 +35,7 @@ router.use('/', editHistoryRoutes);
 router.use('/', forwardRoutes);
 router.use('/', bulkDeleteRoutes);
 router.use('/', starRoutes);
+router.use('/', reportRoutes);
 
 export default router;
 
