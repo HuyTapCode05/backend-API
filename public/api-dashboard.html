@@ -1910,6 +1910,10 @@
           'POST /api/message/:messageId/reaction': { emoji: '👍' },
           'POST /api/message/voice/upload': {},
           'POST /api/message/voice/send': { roomId: '${ROOM_ID}', fileUrl: '/Uploads/Voice/voice-123.mp3', duration: 30 },
+          'POST /api/message/room/:roomId/archive': {},
+          'POST /api/message/room/:roomId/unarchive': {},
+          'GET /api/message/room/:roomId/archive-status': {},
+          'GET /api/message/archived': { limit: 50, offset: 0 },
 
           'POST /api/groups': { name: 'My Group ${TS8}', description: 'Group description', isPrivate: false },
           'PUT /api/groups/:groupId': { name: 'Updated Group ${TS8}', description: 'Updated description', isPrivate: true },

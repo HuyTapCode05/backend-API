@@ -99,7 +99,11 @@ app.get('/api', (req, res) => {
         updateMessage: 'PUT /api/message/:messageId',
         deleteMessage: 'DELETE /api/message/:messageId',
         voiceUpload: 'POST /api/message/voice/upload',
-        voiceSend: 'POST /api/message/voice/send'
+        voiceSend: 'POST /api/message/voice/send',
+        archiveRoom: 'POST /api/message/room/:roomId/archive',
+        unarchiveRoom: 'POST /api/message/room/:roomId/unarchive',
+        getArchiveStatus: 'GET /api/message/room/:roomId/archive-status',
+        getArchivedRooms: 'GET /api/message/archived'
       },
       groups: {
         create: 'POST /api/groups',

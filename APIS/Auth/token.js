@@ -8,7 +8,6 @@ import { verifyToken } from './middleware.js';
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-// Refresh token endpoint - Cấp Access Token mới từ Refresh Token
 router.post('/refresh', async (req, res) => {
   try {
     const { refreshToken } = req.body;
@@ -22,7 +21,6 @@ router.post('/refresh', async (req, res) => {
       return sendError(res, 'Database not connected', 'Server error', 500);
     }
 
-    // Verify refresh token
     let decoded;
     try {
       decoded = jwt.verify(refreshToken, JWT_SECRET);
@@ -33,46 +31,38 @@ router.post('/refresh', async (req, res) => {
       return sendError(res, 'Invalid or expired refresh token', 'Authentication error', 401);
     }
 
-    // Find user and check if account is still active
     const user = await db.collection('users').findOne(
       { _id: new ObjectId(decoded.userId) },
       { projection: { password: 0 } }
     );
 
     if (!user) {
-      // User deleted - invalidate all tokens
       await db.collection('refresh_tokens').deleteMany({ userId: new ObjectId(decoded.userId) });
       return sendError(res, 'User not found', 'Not found', 404);
     }
 
-    // Check if account is locked/disabled
     if (user.locked || user.disabled) {
-      // Invalidate all tokens for locked account
       await db.collection('refresh_tokens').deleteMany({ userId: new ObjectId(decoded.userId) });
       return sendError(res, 'Account is locked or disabled', 'Authentication error', 403);
     }
 
-    // Verify refresh token exists in database (prevent token reuse)
     const tokenExists = await db.collection('refresh_tokens').findOne({ token: refreshToken });
     if (!tokenExists) {
       return sendError(res, 'Refresh token not found or already used', 'Authentication error', 401);
     }
 
-    // Generate new access token
     const accessToken = jwt.sign(
       { userId: user._id.toString(), username: user.username },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    // Generate new refresh token
     const newRefreshToken = jwt.sign(
       { userId: user._id.toString(), username: user.username, type: 'refresh_token' },
       JWT_SECRET,
-      { expiresIn: '30d' } // Refresh token valid for 30 days
+      { expiresIn: '30d' }
     );
 
-    // Update refresh token in database
     await db.collection('refresh_tokens').updateOne(
       { token: refreshToken },
       {
@@ -94,14 +84,12 @@ router.post('/refresh', async (req, res) => {
   }
 });
 
-// Logout endpoint - Xóa phiên làm việc
 router.post('/logout', verifyToken, async (req, res) => {
   try {
     const { refreshToken } = req.body;
     const db = getDB();
 
     if (db && refreshToken) {
-      // Delete refresh token from database
       await db.collection('refresh_tokens').deleteOne({ token: refreshToken });
     }
 
@@ -113,4 +101,3 @@ router.post('/logout', verifyToken, async (req, res) => {
 });
 
 export default router;
-

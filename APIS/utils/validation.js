@@ -1,52 +1,31 @@
-// Input validation and sanitization utilities
-
-/**
- * Sanitize string input - Remove dangerous characters
- */
 export function sanitizeString(input) {
   if (typeof input !== 'string') return '';
-  return input.trim().replace(/[<>]/g, ''); // Remove < and > to prevent XSS
+  return input.trim().replace(/[<>]/g, '');
 }
 
-/**
- * Validate ObjectId format
- */
 export function isValidObjectId(id) {
   if (!id || typeof id !== 'string') return false;
   return /^[0-9a-fA-F]{24}$/.test(id);
 }
 
-/**
- * Validate email format
- */
 export function isValidEmail(email) {
   if (!email || typeof email !== 'string') return false;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email.trim());
 }
 
-/**
- * Validate username format
- */
 export function isValidUsername(username) {
   if (!username || typeof username !== 'string') return false;
-  // Only alphanumeric, underscore, and 3-20 characters
   const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
   return usernameRegex.test(username.trim());
 }
 
-/**
- * Validate roomId format (alphanumeric, dash, underscore)
- */
 export function isValidRoomId(roomId) {
   if (!roomId || typeof roomId !== 'string') return false;
   const roomIdRegex = /^[a-zA-Z0-9_-]+$/;
   return roomIdRegex.test(roomId.trim());
 }
 
-/**
- * Whitelist object - Only keep allowed fields
- */
 export function whitelistObject(obj, allowedFields) {
   if (!obj || typeof obj !== 'object') return {};
   const result = {};
@@ -58,9 +37,6 @@ export function whitelistObject(obj, allowedFields) {
   return result;
 }
 
-/**
- * Validate and sanitize text input
- */
 export function validateText(text, maxLength = 10000) {
   if (!text || typeof text !== 'string') return null;
   const sanitized = sanitizeString(text);
@@ -69,4 +45,3 @@ export function validateText(text, maxLength = 10000) {
   }
   return sanitized;
 }
-

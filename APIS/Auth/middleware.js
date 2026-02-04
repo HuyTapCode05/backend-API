@@ -3,7 +3,6 @@ import { sendError } from '../utils/response.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-// Verify token middleware
 export async function verifyToken(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1] || req.query.token;
 
@@ -14,7 +13,6 @@ export async function verifyToken(req, res, next) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     
-    // Check if user still exists and is not locked/disabled
     const { getDB } = await import('../../config/database.js');
     const db = getDB();
     
@@ -28,7 +26,6 @@ export async function verifyToken(req, res, next) {
         return sendError(res, 'User not found', 'Authentication error', 401);
       }
 
-      // Check if account is locked/disabled (if you add this field later)
       if (user.locked || user.disabled) {
         return sendError(res, 'Account is locked or disabled', 'Authentication error', 403);
       }

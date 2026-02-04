@@ -65,7 +65,6 @@ router.post('/verify-email', async (req, res) => {
       { $set: { emailVerified: true } }
     );
 
-    // Delete verification token
     await db.collection('email_verifications').deleteOne({ 
       _id: verification._id 
     });
@@ -77,7 +76,6 @@ router.post('/verify-email', async (req, res) => {
   }
 });
 
-// Resend verification email
 router.post('/resend-verification', authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
@@ -101,17 +99,14 @@ router.post('/resend-verification', authLimiter, async (req, res) => {
       return sendError(res, 'Email already verified', 'Validation error', 400);
     }
 
-    // Generate new verification token
     const emailToken = jwt.sign(
       { email, type: 'email_verification' },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
 
-    // Generate new verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Update or create verification record
     await db.collection('email_verifications').updateOne(
       { userId: user._id },
       {
@@ -125,7 +120,6 @@ router.post('/resend-verification', authLimiter, async (req, res) => {
       { upsert: true }
     );
 
-    // Send verification email
     const emailSent = await sendVerificationEmail(email, user.username, verificationCode);
     if (!emailSent) {
       console.warn(`⚠️  Failed to send verification email to ${email}`);

@@ -1,5 +1,3 @@
-// Response helper functions - Dùng chung cho tất cả API
-
 export function successResponse(data, message = 'Success') {
   return {
     success: true,
@@ -24,4 +22,3 @@ export function sendSuccess(res, data, message = 'Success', statusCode = 200) {
 export function sendError(res, error, message = 'Error', statusCode = 400) {
   return res.status(statusCode).json(errorResponse(error, message, statusCode));
 }
-
