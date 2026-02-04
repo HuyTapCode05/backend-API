@@ -97,7 +97,9 @@ app.get('/api', (req, res) => {
         advancedSearch: 'GET /api/message/search/advanced',
         getMessages: 'GET /api/message/:roomId',
         updateMessage: 'PUT /api/message/:messageId',
-        deleteMessage: 'DELETE /api/message/:messageId'
+        deleteMessage: 'DELETE /api/message/:messageId',
+        voiceUpload: 'POST /api/message/voice/upload',
+        voiceSend: 'POST /api/message/voice/send'
       },
       groups: {
         create: 'POST /api/groups',

@@ -9,6 +9,7 @@ import readReceiptsRoutes from './readReceipts/index.js';
 import repliesRoutes from './replies/index.js';
 import mentionsRoutes from './mentions/index.js';
 import pinRoutes from './pin.js';
+import voiceRoutes from './voice.js';
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ router.use('/', readReceiptsRoutes);
 router.use('/', repliesRoutes);
 router.use('/', pinRoutes);
 router.use('/mentions', mentionsRoutes);
+router.use('/voice', voiceRoutes);
 
 export default router;
 

@@ -1890,7 +1890,6 @@
           { key: 'friends.remove', name: 'Friends - Remove', method: 'DELETE', path: '/api/friends/${FRIEND_ID}', requiresAuth: true }
         ];
 
-        // Map body template theo "METHOD PATH" đúng như /api trả về (chỉ các endpoint cần body).
         const BODY_TEMPLATES = {
           'POST /api/auth/register': { username: 'tu_${TS8}', password: 'password123', email: 'test_${TS8}@example.com' },
           'POST /api/auth/login': { username: '${LAST_USERNAME}', password: 'password123' },
@@ -1909,6 +1908,8 @@
           'POST /api/message/send': { roomId: '${ROOM_ID}', text: 'Hello ${TS8}' },
           'PUT /api/message/:messageId': { text: 'Updated ${TS8}' },
           'POST /api/message/:messageId/reaction': { emoji: '👍' },
+          'POST /api/message/voice/upload': {},
+          'POST /api/message/voice/send': { roomId: '${ROOM_ID}', fileUrl: '/Uploads/Voice/voice-123.mp3', duration: 30 },
 
           'POST /api/groups': { name: 'My Group ${TS8}', description: 'Group description', isPrivate: false },
           'PUT /api/groups/:groupId': { name: 'Updated Group ${TS8}', description: 'Updated description', isPrivate: true },
@@ -1934,7 +1935,6 @@
           'POST /api/friends/reject': { requestId: '${REQUEST_ID}' }
         };
 
-        // Hooks để auto lưu token/ids sau khi call
         const ON_SUCCESS_BY_SIG = {
           'POST /api/auth/register': (json) => {
             const at = json?.data?.accessToken;
