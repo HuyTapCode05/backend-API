@@ -1880,6 +1880,7 @@
           { key: 'message.unstar', name: 'Message - Unstar', method: 'DELETE', path: '/api/message/${MESSAGE_ID}/star', requiresAuth: true },
           { key: 'message.starred', name: 'Message - Get Starred', method: 'GET', path: '/api/message/starred?limit=50&skip=0&roomId=', requiresAuth: true },
           { key: 'message.report', name: 'Message - Report', method: 'POST', path: '/api/message/${MESSAGE_ID}/report', requiresAuth: true, body: { reason: 'spam', description: 'Spam content' } },
+          { key: 'message.recall', name: 'Message - Recall (Unsend)', method: 'POST', path: '/api/message/${MESSAGE_ID}/recall', requiresAuth: true },
           { key: 'message.delete', name: 'Message - Delete', method: 'DELETE', path: '/api/message/${MESSAGE_ID}', requiresAuth: true },
 
           // Notifications
@@ -1925,6 +1926,7 @@
           'POST /api/message/bulk-delete': { messageIds: ['${MESSAGE_ID}'], roomId: '${ROOM_ID}' },
           'POST /api/message/room/:roomId/bulk-delete': { messageIds: ['${MESSAGE_ID}'], beforeDate: '2024-01-01T00:00:00Z' },
           'POST /api/message/:messageId/report': { reason: 'spam', description: 'Spam content' },
+          'POST /api/message/:messageId/recall': {},
 
           'POST /api/groups': { name: 'My Group ${TS8}', description: 'Group description', isPrivate: false },
           'PUT /api/groups/:groupId': { name: 'Updated Group ${TS8}', description: 'Updated description', isPrivate: true },

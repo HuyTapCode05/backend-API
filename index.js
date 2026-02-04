@@ -111,7 +111,8 @@ app.get('/api', (req, res) => {
         star: 'POST /api/message/:messageId/star',
         unstar: 'DELETE /api/message/:messageId/star',
         getStarred: 'GET /api/message/starred?limit=50&skip=0&roomId=',
-        report: 'POST /api/message/:messageId/report'
+        report: 'POST /api/message/:messageId/report',
+        recall: 'POST /api/message/:messageId/recall'
       },
       groups: {
         create: 'POST /api/groups',
