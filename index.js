@@ -107,7 +107,10 @@ app.get('/api', (req, res) => {
         getEditHistory: 'GET /api/message/:messageId/edit-history',
         forward: 'POST /api/message/:messageId/forward',
         bulkDelete: 'POST /api/message/bulk-delete',
-        bulkDeleteRoom: 'POST /api/message/room/:roomId/bulk-delete'
+        bulkDeleteRoom: 'POST /api/message/room/:roomId/bulk-delete',
+        star: 'POST /api/message/:messageId/star',
+        unstar: 'DELETE /api/message/:messageId/star',
+        getStarred: 'GET /api/message/starred?limit=50&skip=0&roomId='
       },
       groups: {
         create: 'POST /api/groups',

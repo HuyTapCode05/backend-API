@@ -1874,6 +1874,9 @@
           { key: 'message.pin', name: 'Message - Pin', method: 'POST', path: '/api/message/${MESSAGE_ID}/pin', requiresAuth: true },
           { key: 'message.unpin', name: 'Message - Unpin', method: 'DELETE', path: '/api/message/${MESSAGE_ID}/pin', requiresAuth: true },
           { key: 'message.pinned', name: 'Message - Get Pinned', method: 'GET', path: '/api/message/room/${ROOM_ID}/pinned', requiresAuth: true },
+          { key: 'message.star', name: 'Message - Star', method: 'POST', path: '/api/message/${MESSAGE_ID}/star', requiresAuth: true },
+          { key: 'message.unstar', name: 'Message - Unstar', method: 'DELETE', path: '/api/message/${MESSAGE_ID}/star', requiresAuth: true },
+          { key: 'message.starred', name: 'Message - Get Starred', method: 'GET', path: '/api/message/starred?limit=50&skip=0&roomId=', requiresAuth: true },
           { key: 'message.delete', name: 'Message - Delete', method: 'DELETE', path: '/api/message/${MESSAGE_ID}', requiresAuth: true },
 
           // Notifications
