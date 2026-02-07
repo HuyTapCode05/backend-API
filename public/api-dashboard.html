@@ -1895,6 +1895,15 @@
           { key: 'message.report', name: 'Message - Report', method: 'POST', path: '/api/message/${MESSAGE_ID}/report', requiresAuth: true, body: { reason: 'spam', description: 'Spam content' } },
           { key: 'message.recall', name: 'Message - Recall (Unsend)', method: 'POST', path: '/api/message/${MESSAGE_ID}/recall', requiresAuth: true },
           { key: 'message.delete', name: 'Message - Delete', method: 'DELETE', path: '/api/message/${MESSAGE_ID}', requiresAuth: true },
+          
+          // Message Drafts
+          { key: 'message.draftSave', name: 'Message - Save Draft', method: 'POST', path: '/api/message/draft', requiresAuth: true, body: { roomId: '${ROOM_ID}', text: 'Draft message ${TS}' } },
+          { key: 'message.drafts', name: 'Message - List Drafts', method: 'GET', path: '/api/message/drafts?limit=50&skip=0', requiresAuth: true },
+          { key: 'message.draftGet', name: 'Message - Get Draft (by Room)', method: 'GET', path: '/api/message/draft/${ROOM_ID}', requiresAuth: true },
+          { key: 'message.draftUpdate', name: 'Message - Update Draft', method: 'PUT', path: '/api/message/draft/${DRAFT_ID}', requiresAuth: true, body: { text: 'Updated draft ${TS}' } },
+          { key: 'message.draftDelete', name: 'Message - Delete Draft', method: 'DELETE', path: '/api/message/draft/${DRAFT_ID}', requiresAuth: true },
+          { key: 'message.draftDeleteRoom', name: 'Message - Delete Draft (by Room)', method: 'DELETE', path: '/api/message/draft/room/${ROOM_ID}', requiresAuth: true },
+          { key: 'message.draftSend', name: 'Message - Send Draft', method: 'POST', path: '/api/message/draft/${DRAFT_ID}/send', requiresAuth: true },
 
           // Notifications
           { key: 'noti.get', name: 'Notifications - Get', method: 'GET', path: '/api/notifications?limit=50&skip=0&unreadOnly=false', requiresAuth: true },
@@ -1942,6 +1951,9 @@
           'POST /api/message/room/:roomId/bulk-delete': { messageIds: ['${MESSAGE_ID}'], beforeDate: '2024-01-01T00:00:00Z' },
           'POST /api/message/:messageId/report': { reason: 'spam', description: 'Spam content' },
           'POST /api/message/:messageId/recall': {},
+          'POST /api/message/draft': { roomId: '${ROOM_ID}', text: 'Draft message ${TS8}' },
+          'PUT /api/message/draft/:draftId': { text: 'Updated draft ${TS8}' },
+          'POST /api/message/draft/:draftId/send': {},
 
           'POST /api/groups': { name: 'My Group ${TS8}', description: 'Group description', isPrivate: false },
           'PUT /api/groups/:groupId': { name: 'Updated Group ${TS8}', description: 'Updated description', isPrivate: true },
@@ -2020,6 +2032,27 @@
           'POST /api/message/send': (json) => {
             const mid = json?.data?._id || json?._id;
             if (mid) setVar('MESSAGE_ID', mid);
+          },
+          'POST /api/message/draft': (json) => {
+            const did = json?.data?.draft?._id || json?.draft?._id || json?.data?._id || json?._id;
+            if (did) setVar('DRAFT_ID', did);
+          },
+          'GET /api/message/drafts': (json) => {
+            const first = json?.data?.drafts?.[0];
+            const did = first?._id || first?.id;
+            if (did) setVar('DRAFT_ID', did);
+          },
+          'GET /api/message/draft/:roomId': (json) => {
+            const did = json?.data?.draft?._id || json?.draft?._id;
+            if (did) setVar('DRAFT_ID', did);
+          },
+          'PUT /api/message/draft/:draftId': (json) => {
+            const did = json?.data?.draft?._id || json?.draft?._id || json?.data?._id || json?._id;
+            if (did) setVar('DRAFT_ID', did);
+          },
+          'POST /api/message/draft/:draftId/send': (json) => {
+            const mid = json?.data?.message?._id || json?.message?._id || json?.data?._id || json?._id;
+            if (mid) setVar('MESSAGE_ID', mid);
           }
         };
 
@@ -2031,6 +2064,7 @@
         if (!vars.FRIEND_ID) vars.FRIEND_ID = '';
         if (!vars.REPORT_ID) vars.REPORT_ID = '';
         if (!vars.PIN_TOKEN) vars.PIN_TOKEN = '';
+        if (!vars.DRAFT_ID) vars.DRAFT_ID = '';
 
         function saveVars() {
           localStorage.setItem('apiVars', JSON.stringify(vars));
@@ -2075,7 +2109,8 @@
               .replaceAll('${REQUEST_ID}', vars.REQUEST_ID || '')
               .replaceAll('${FRIEND_ID}', vars.FRIEND_ID || '')
               .replaceAll('${REPORT_ID}', vars.REPORT_ID || '')
-              .replaceAll('${PIN_TOKEN}', vars.PIN_TOKEN || '');
+              .replaceAll('${PIN_TOKEN}', vars.PIN_TOKEN || '')
+              .replaceAll('${DRAFT_ID}', vars.DRAFT_ID || '');
           }
           if (Array.isArray(value)) return value.map(substituteTemplate);
           if (value && typeof value === 'object') {

@@ -120,7 +120,14 @@ app.get('/api', (req, res) => {
         unstar: 'DELETE /api/message/:messageId/star',
         getStarred: 'GET /api/message/starred?limit=50&skip=0&roomId=',
         report: 'POST /api/message/:messageId/report',
-        recall: 'POST /api/message/:messageId/recall'
+        recall: 'POST /api/message/:messageId/recall',
+        saveDraft: 'POST /api/message/draft',
+        getDrafts: 'GET /api/message/drafts?limit=50&skip=0',
+        getDraft: 'GET /api/message/draft/:roomId',
+        updateDraft: 'PUT /api/message/draft/:draftId',
+        deleteDraft: 'DELETE /api/message/draft/:draftId',
+        deleteDraftByRoom: 'DELETE /api/message/draft/room/:roomId',
+        sendDraft: 'POST /api/message/draft/:draftId/send'
       },
       groups: {
         create: 'POST /api/groups',
