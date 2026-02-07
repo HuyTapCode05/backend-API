@@ -1916,20 +1916,7 @@
           { key: 'friends.reject', name: 'Friends - Reject', method: 'POST', path: '/api/friends/reject', requiresAuth: true, body: { requestId: '${REQUEST_ID}' } },
           { key: 'friends.requests', name: 'Friends - List Requests', method: 'GET', path: '/api/friends/requests?type=received&limit=50&skip=0', requiresAuth: true },
           { key: 'friends.list', name: 'Friends - List', method: 'GET', path: '/api/friends?limit=50&skip=0', requiresAuth: true },
-          { key: 'friends.remove', name: 'Friends - Remove', method: 'DELETE', path: '/api/friends/${FRIEND_ID}', requiresAuth: true },
-
-          // Stickers
-          { key: 'stickers.upload', name: 'Stickers - Upload (multipart)', method: 'POST', path: '/api/stickers/upload', requiresAuth: true, isMultipart: true },
-          { key: 'stickers.list', name: 'Stickers - List All', method: 'GET', path: '/api/stickers?type=all&limit=50&skip=0', requiresAuth: true },
-          { key: 'stickers.listPublic', name: 'Stickers - List Public', method: 'GET', path: '/api/stickers?type=public&limit=50&skip=0', requiresAuth: true },
-          { key: 'stickers.listMy', name: 'Stickers - List My Stickers', method: 'GET', path: '/api/stickers?type=my&limit=50&skip=0', requiresAuth: true },
-          { key: 'stickers.listFavorites', name: 'Stickers - List Favorites', method: 'GET', path: '/api/stickers?type=favorites&limit=50&skip=0', requiresAuth: true },
-          { key: 'stickers.get', name: 'Stickers - Get by ID', method: 'GET', path: '/api/stickers/${STICKER_ID}', requiresAuth: true },
-          { key: 'stickers.update', name: 'Stickers - Update', method: 'PUT', path: '/api/stickers/${STICKER_ID}', requiresAuth: true, body: { name: 'Updated Sticker ${TS}', category: 'custom', isPublic: false } },
-          { key: 'stickers.delete', name: 'Stickers - Delete', method: 'DELETE', path: '/api/stickers/${STICKER_ID}', requiresAuth: true },
-          { key: 'stickers.favorite', name: 'Stickers - Favorite', method: 'POST', path: '/api/stickers/${STICKER_ID}/favorite', requiresAuth: true },
-          { key: 'stickers.unfavorite', name: 'Stickers - Unfavorite', method: 'DELETE', path: '/api/stickers/${STICKER_ID}/favorite', requiresAuth: true },
-          { key: 'stickers.categories', name: 'Stickers - Get Categories', method: 'GET', path: '/api/stickers/meta/categories', requiresAuth: true }
+          { key: 'friends.remove', name: 'Friends - Remove', method: 'DELETE', path: '/api/friends/${FRIEND_ID}', requiresAuth: true }
         ];
 
         const BODY_TEMPLATES = {
@@ -1995,9 +1982,7 @@
 
           'POST /api/friends/request': { userId: '${USER_ID_TARGET}' },
           'POST /api/friends/accept': { requestId: '${REQUEST_ID}' },
-          'POST /api/friends/reject': { requestId: '${REQUEST_ID}' },
-
-          'PUT /api/stickers/:stickerId': { name: 'Updated Sticker ${TS8}', category: 'custom', isPublic: false }
+          'POST /api/friends/reject': { requestId: '${REQUEST_ID}' }
         };
 
         const ON_SUCCESS_BY_SIG = {
@@ -2068,23 +2053,6 @@
           'POST /api/message/draft/:draftId/send': (json) => {
             const mid = json?.data?.message?._id || json?.message?._id || json?.data?._id || json?._id;
             if (mid) setVar('MESSAGE_ID', mid);
-          },
-          'POST /api/stickers/upload': (json) => {
-            const sid = json?.data?.sticker?._id || json?.sticker?._id || json?.data?._id || json?._id;
-            if (sid) setVar('STICKER_ID', sid);
-          },
-          'GET /api/stickers': (json) => {
-            const first = json?.data?.stickers?.[0];
-            const sid = first?._id || first?.id;
-            if (sid) setVar('STICKER_ID', sid);
-          },
-          'GET /api/stickers/:stickerId': (json) => {
-            const sid = json?.data?.sticker?._id || json?.sticker?._id || json?.data?._id || json?._id;
-            if (sid) setVar('STICKER_ID', sid);
-          },
-          'PUT /api/stickers/:stickerId': (json) => {
-            const sid = json?.data?.sticker?._id || json?.sticker?._id || json?.data?._id || json?._id;
-            if (sid) setVar('STICKER_ID', sid);
           }
         };
 
@@ -2097,7 +2065,6 @@
         if (!vars.REPORT_ID) vars.REPORT_ID = '';
         if (!vars.PIN_TOKEN) vars.PIN_TOKEN = '';
         if (!vars.DRAFT_ID) vars.DRAFT_ID = '';
-        if (!vars.STICKER_ID) vars.STICKER_ID = '';
 
         function saveVars() {
           localStorage.setItem('apiVars', JSON.stringify(vars));
@@ -2143,8 +2110,7 @@
               .replaceAll('${FRIEND_ID}', vars.FRIEND_ID || '')
               .replaceAll('${REPORT_ID}', vars.REPORT_ID || '')
               .replaceAll('${PIN_TOKEN}', vars.PIN_TOKEN || '')
-              .replaceAll('${DRAFT_ID}', vars.DRAFT_ID || '')
-              .replaceAll('${STICKER_ID}', vars.STICKER_ID || '');
+              .replaceAll('${DRAFT_ID}', vars.DRAFT_ID || '');
           }
           if (Array.isArray(value)) return value.map(substituteTemplate);
           if (value && typeof value === 'object') {

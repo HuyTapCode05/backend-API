@@ -14,7 +14,6 @@ import groupsRoutes from './APIS/groups/index.js';
 import friendsRoutes from './APIS/friends/index.js';
 import notificationsRoutes from './APIS/notifications/index.js';
 import callsRoutes from './APIS/calls/index.js';
-import stickersRoutes from './APIS/stickers/index.js';
 import { initWebSocket } from './config/websocket.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -207,16 +206,6 @@ app.get('/api', (req, res) => {
         getCall: 'GET /api/calls/:callId',
         getHistory: 'GET /api/calls/history'
       },
-      stickers: {
-        upload: 'POST /api/stickers/upload (multipart/form-data with sticker file)',
-        list: 'GET /api/stickers?type=all|public|my|favorites&category=&pack=&search=&limit=50&skip=0',
-        get: 'GET /api/stickers/:stickerId',
-        update: 'PUT /api/stickers/:stickerId',
-        delete: 'DELETE /api/stickers/:stickerId',
-        favorite: 'POST /api/stickers/:stickerId/favorite',
-        unfavorite: 'DELETE /api/stickers/:stickerId/favorite',
-        getCategories: 'GET /api/stickers/meta/categories'
-      },
       websocket: {
         connect: 'WS /',
         events: ['join', 'message', 'typing', 'leave', 'call_offer', 'call_answer', 'call_ice', 'call_end']
@@ -232,8 +221,7 @@ app.use('/api/message', messageRoutes);    // All message routes (upload, send, 
 app.use('/api/groups', groupsRoutes);  // All group routes (create, list, get, update, delete, members)
 app.use('/api/friends', friendsRoutes);  // All friend routes (request, accept, reject, list)
 app.use('/api/notifications', notificationsRoutes);  // All notification routes (get, mark as read)
-app.use('/api/calls', callsRoutes);  // All call routes (initiate, accept, reject, end, history)
-app.use('/api/stickers', stickersRoutes);  // Sticker routes (upload, list, get, delete, favorite)   
+app.use('/api/calls', callsRoutes);  // All call routes (initiate, accept, reject, end, history)   
 
 // Health check
 app.get('/api/health', (req, res) => {
