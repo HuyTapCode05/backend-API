@@ -1905,6 +1905,15 @@
           { key: 'message.draftDeleteRoom', name: 'Message - Delete Draft (by Room)', method: 'DELETE', path: '/api/message/draft/room/${ROOM_ID}', requiresAuth: true },
           { key: 'message.draftSend', name: 'Message - Send Draft', method: 'POST', path: '/api/message/draft/${DRAFT_ID}/send', requiresAuth: true },
 
+          // Message Scheduling
+          { key: 'message.schedule', name: 'Message - Schedule', method: 'POST', path: '/api/message/schedule', requiresAuth: true, body: { roomId: '${ROOM_ID}', text: 'Scheduled message ${TS}', scheduledAt: '${SCHEDULED_AT}' } },
+          { key: 'message.scheduledList', name: 'Message - List Scheduled', method: 'GET', path: '/api/message/scheduled?limit=50&skip=0', requiresAuth: true },
+          { key: 'message.scheduledGet', name: 'Message - Get Scheduled', method: 'GET', path: '/api/message/scheduled/${SCHEDULED_ID}', requiresAuth: true },
+          { key: 'message.scheduledUpdate', name: 'Message - Update Scheduled', method: 'PUT', path: '/api/message/scheduled/${SCHEDULED_ID}', requiresAuth: true, body: { text: 'Updated scheduled message ${TS}', scheduledAt: '${SCHEDULED_AT}' } },
+          { key: 'message.scheduledDelete', name: 'Message - Delete Scheduled', method: 'DELETE', path: '/api/message/scheduled/${SCHEDULED_ID}', requiresAuth: true },
+          { key: 'message.scheduledCancel', name: 'Message - Cancel Scheduled', method: 'POST', path: '/api/message/scheduled/${SCHEDULED_ID}/cancel', requiresAuth: true },
+          { key: 'message.scheduledProcess', name: 'Message - Process Scheduled', method: 'POST', path: '/api/message/scheduled/process', requiresAuth: true },
+
           // Notifications
           { key: 'noti.get', name: 'Notifications - Get', method: 'GET', path: '/api/notifications?limit=50&skip=0&unreadOnly=false', requiresAuth: true },
           { key: 'noti.markRead', name: 'Notifications - Mark Read', method: 'PUT', path: '/api/notifications/${NOTIFICATION_ID}/read', requiresAuth: true },
@@ -1954,6 +1963,8 @@
           'POST /api/message/draft': { roomId: '${ROOM_ID}', text: 'Draft message ${TS8}' },
           'PUT /api/message/draft/:draftId': { text: 'Updated draft ${TS8}' },
           'POST /api/message/draft/:draftId/send': {},
+          'POST /api/message/schedule': { roomId: '${ROOM_ID}', text: 'Scheduled message ${TS8}', scheduledAt: '${SCHEDULED_AT}' },
+          'PUT /api/message/scheduled/:scheduledId': { text: 'Updated scheduled message ${TS8}', scheduledAt: '${SCHEDULED_AT}' },
 
           'POST /api/groups': { name: 'My Group ${TS8}', description: 'Group description', isPrivate: false },
           'PUT /api/groups/:groupId': { name: 'Updated Group ${TS8}', description: 'Updated description', isPrivate: true },
@@ -2053,6 +2064,23 @@
           'POST /api/message/draft/:draftId/send': (json) => {
             const mid = json?.data?.message?._id || json?.message?._id || json?.data?._id || json?._id;
             if (mid) setVar('MESSAGE_ID', mid);
+          },
+          'POST /api/message/schedule': (json) => {
+            const sid = json?.data?._id || json?._id;
+            if (sid) setVar('SCHEDULED_ID', sid);
+          },
+          'GET /api/message/scheduled': (json) => {
+            const first = json?.data?.scheduledMessages?.[0];
+            const sid = first?._id || first?.id;
+            if (sid) setVar('SCHEDULED_ID', sid);
+          },
+          'GET /api/message/scheduled/:scheduledId': (json) => {
+            const sid = json?.data?._id || json?._id;
+            if (sid) setVar('SCHEDULED_ID', sid);
+          },
+          'PUT /api/message/scheduled/:scheduledId': (json) => {
+            const sid = json?.data?._id || json?._id;
+            if (sid) setVar('SCHEDULED_ID', sid);
           }
         };
 
@@ -2065,6 +2093,12 @@
         if (!vars.REPORT_ID) vars.REPORT_ID = '';
         if (!vars.PIN_TOKEN) vars.PIN_TOKEN = '';
         if (!vars.DRAFT_ID) vars.DRAFT_ID = '';
+        if (!vars.SCHEDULED_ID) vars.SCHEDULED_ID = '';
+        if (!vars.SCHEDULED_AT) {
+          const futureDate = new Date();
+          futureDate.setHours(futureDate.getHours() + 1);
+          vars.SCHEDULED_AT = futureDate.toISOString();
+        }
 
         function saveVars() {
           localStorage.setItem('apiVars', JSON.stringify(vars));
@@ -2110,7 +2144,9 @@
               .replaceAll('${FRIEND_ID}', vars.FRIEND_ID || '')
               .replaceAll('${REPORT_ID}', vars.REPORT_ID || '')
               .replaceAll('${PIN_TOKEN}', vars.PIN_TOKEN || '')
-              .replaceAll('${DRAFT_ID}', vars.DRAFT_ID || '');
+              .replaceAll('${DRAFT_ID}', vars.DRAFT_ID || '')
+              .replaceAll('${SCHEDULED_ID}', vars.SCHEDULED_ID || '')
+              .replaceAll('${SCHEDULED_AT}', vars.SCHEDULED_AT || '');
           }
           if (Array.isArray(value)) return value.map(substituteTemplate);
           if (value && typeof value === 'object') {

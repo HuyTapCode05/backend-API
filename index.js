@@ -127,7 +127,14 @@ app.get('/api', (req, res) => {
         updateDraft: 'PUT /api/message/draft/:draftId',
         deleteDraft: 'DELETE /api/message/draft/:draftId',
         deleteDraftByRoom: 'DELETE /api/message/draft/room/:roomId',
-        sendDraft: 'POST /api/message/draft/:draftId/send'
+        sendDraft: 'POST /api/message/draft/:draftId/send',
+        schedule: 'POST /api/message/schedule',
+        getScheduled: 'GET /api/message/scheduled?roomId=&status=&limit=50&skip=0',
+        getScheduledById: 'GET /api/message/scheduled/:scheduledId',
+        updateScheduled: 'PUT /api/message/scheduled/:scheduledId',
+        deleteScheduled: 'DELETE /api/message/scheduled/:scheduledId',
+        cancelScheduled: 'POST /api/message/scheduled/:scheduledId/cancel',
+        processScheduled: 'POST /api/message/scheduled/process'
       },
       groups: {
         create: 'POST /api/groups',
