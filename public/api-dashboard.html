@@ -1880,6 +1880,7 @@
             }
           },
           { key: 'message.get', name: 'Message - Get Messages', method: 'GET', path: '/api/message/${ROOM_ID}?limit=50&skip=0', requiresAuth: true },
+          { key: 'message.exportRoom', name: 'Message - Export Room', method: 'GET', path: '/api/message/export/room/${ROOM_ID}?from=&to=&limit=1000&skip=0&direction=asc&includeSystem=true', requiresAuth: true },
           { key: 'message.reply', name: 'Message - Send Reply', method: 'POST', path: '/api/message/send', requiresAuth: true, body: { roomId: '${ROOM_ID}', text: 'reply ${TS}', replyToMessageId: '${MESSAGE_ID}' } },
           { key: 'message.update', name: 'Message - Update', method: 'PUT', path: '/api/message/${MESSAGE_ID}', requiresAuth: true, body: { text: 'Updated ${TS}' } },
           { key: 'message.replies', name: 'Message - Get Replies', method: 'GET', path: '/api/message/${MESSAGE_ID}/replies?limit=50&skip=0', requiresAuth: true },

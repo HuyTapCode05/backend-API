@@ -136,7 +136,8 @@ app.get('/api', (req, res) => {
         updateScheduled: 'PUT /api/message/scheduled/:scheduledId',
         deleteScheduled: 'DELETE /api/message/scheduled/:scheduledId',
         cancelScheduled: 'POST /api/message/scheduled/:scheduledId/cancel',
-        processScheduled: 'POST /api/message/scheduled/process'
+        processScheduled: 'POST /api/message/scheduled/process',
+        exportRoom: 'GET /api/message/export/room/:roomId?from=&to=&limit=1000&skip=0&direction=asc&includeSystem=true'
       },
       groups: {
         create: 'POST /api/groups',

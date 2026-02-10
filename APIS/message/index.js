@@ -19,6 +19,7 @@ import reportRoutes from './report.js';
 import recallRoutes from './recall.js';
 import draftsRoutes from './drafts.js';
 import scheduleRoutes from './schedule.js';
+import exportRoutes from './export.js';
 
 const router = express.Router();
 
@@ -42,6 +43,7 @@ router.use('/', reportRoutes);
 router.use('/', recallRoutes);
 router.use('/', draftsRoutes);
 router.use('/', scheduleRoutes);
+router.use('/', exportRoutes);
 
 export default router;
 
