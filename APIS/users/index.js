@@ -7,6 +7,7 @@ import presenceRoutes from './presence/index.js';
 import blockRoutes from './block/index.js';
 import pinRoutes from './pin.js';
 import hiddenRoomsRoutes from './hiddenRooms.js';
+import settingsRoutes from './settings.js';
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.use('/', presenceRoutes);
 router.use('/', blockRoutes);
 router.use('/', pinRoutes);
 router.use('/', hiddenRoomsRoutes);
+router.use('/', settingsRoutes);
 
 export default router;
 

@@ -96,7 +96,9 @@ app.get('/api', (req, res) => {
         hideRoom: 'POST /api/users/hidden/rooms/:roomId/hide',
         unhideRoom: 'POST /api/users/hidden/rooms/:roomId/unhide',
         hiddenRooms: 'GET /api/users/hidden/rooms?limit=50&skip=0 (requires x-pin-token)',
-        hiddenStatus: 'GET /api/users/hidden/rooms/:roomId/status'
+        hiddenStatus: 'GET /api/users/hidden/rooms/:roomId/status',
+        getSettings: 'GET /api/users/settings',
+        updateSettings: 'PUT /api/users/settings'
       },
       message: {
         upload: 'POST /api/message/upload',

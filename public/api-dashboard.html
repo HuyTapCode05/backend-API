@@ -1818,6 +1818,8 @@
           { key: 'users.statusUpdate', name: 'Users - Update Status', method: 'PUT', path: '/api/users/status', requiresAuth: true, body: { status: 'online' } },
           { key: 'users.getStatus', name: 'Users - Get User Status', method: 'GET', path: '/api/users/${USER_ID}/status', requiresAuth: true },
           { key: 'users.friendsStatus', name: 'Users - Get Friends Status', method: 'GET', path: '/api/users/friends/status', requiresAuth: true },
+          { key: 'users.getSettings', name: 'Users - Get Settings', method: 'GET', path: '/api/users/settings', requiresAuth: true },
+          { key: 'users.updateSettings', name: 'Users - Update Settings', method: 'PUT', path: '/api/users/settings', requiresAuth: true, body: { notifications: { message: false }, privacy: { lastSeen: 'friends' }, ui: { theme: 'dark' } } },
 
           // Block
           { key: 'users.block', name: 'Users - Block User', method: 'POST', path: '/api/users/block', requiresAuth: true, body: { userId: '${USER_ID_TARGET}' } },
@@ -1940,6 +1942,7 @@
 
           'PUT /api/users/me': { username: 'new_${TS8}', email: 'new_${TS8}@example.com' },
           'PUT /api/users/status': { status: 'online' },
+          'PUT /api/users/settings': { notifications: { message: false }, privacy: { lastSeen: 'friends' }, ui: { theme: 'dark' } },
           'POST /api/users/block': { userId: '${USER_ID_TARGET}' },
           'POST /api/users/unblock': { userId: '${USER_ID_TARGET}' },
           'POST /api/users/pin/set': { pin: '1234', oldPin: '' },
