@@ -1820,6 +1820,11 @@
           { key: 'users.friendsStatus', name: 'Users - Get Friends Status', method: 'GET', path: '/api/users/friends/status', requiresAuth: true },
           { key: 'users.getSettings', name: 'Users - Get Settings', method: 'GET', path: '/api/users/settings', requiresAuth: true },
           { key: 'users.updateSettings', name: 'Users - Update Settings', method: 'PUT', path: '/api/users/settings', requiresAuth: true, body: { notifications: { message: false }, privacy: { lastSeen: 'friends' }, ui: { theme: 'dark' } } },
+          { key: 'users.listDevices', name: 'Users - List Devices', method: 'GET', path: '/api/users/devices', requiresAuth: true, onSuccess: (json) => { const devs = json?.data?.devices || []; if (devs.length > 0) setVar('DEVICE_ID', devs[0].deviceId); } },
+          { key: 'users.getCurrentDevice', name: 'Users - Get Current Device', method: 'GET', path: '/api/users/devices/current', requiresAuth: true, onSuccess: (json) => { const did = json?.data?.device?.deviceId; if (did) setVar('DEVICE_ID', did); } },
+          { key: 'users.logoutDevice', name: 'Users - Logout Device', method: 'DELETE', path: '/api/users/devices/${DEVICE_ID}', requiresAuth: true },
+          { key: 'users.blockDevice', name: 'Users - Block Device', method: 'POST', path: '/api/users/devices/${DEVICE_ID}/block', requiresAuth: true },
+          { key: 'users.unblockDevice', name: 'Users - Unblock Device', method: 'POST', path: '/api/users/devices/${DEVICE_ID}/unblock', requiresAuth: true },
 
           // Block
           { key: 'users.block', name: 'Users - Block User', method: 'POST', path: '/api/users/block', requiresAuth: true, body: { userId: '${USER_ID_TARGET}' } },

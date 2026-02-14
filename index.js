@@ -98,7 +98,12 @@ app.get('/api', (req, res) => {
         hiddenRooms: 'GET /api/users/hidden/rooms?limit=50&skip=0 (requires x-pin-token)',
         hiddenStatus: 'GET /api/users/hidden/rooms/:roomId/status',
         getSettings: 'GET /api/users/settings',
-        updateSettings: 'PUT /api/users/settings'
+        updateSettings: 'PUT /api/users/settings',
+        listDevices: 'GET /api/users/devices',
+        getCurrentDevice: 'GET /api/users/devices/current',
+        logoutDevice: 'DELETE /api/users/devices/:deviceId',
+        blockDevice: 'POST /api/users/devices/:deviceId/block',
+        unblockDevice: 'POST /api/users/devices/:deviceId/unblock'
       },
       message: {
         upload: 'POST /api/message/upload',
