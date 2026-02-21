@@ -188,11 +188,13 @@ async function handleMessage(ws, userId, payload) {
       return;
     }
 
-    // Get full user info
-    const userInfo = await db.collection('users').findOne(
-      { _id: new ObjectId(userId) },
-      { projection: { password: 0 } }
-    );
+    // Get full user info when ws userId maps to a Mongo ObjectId
+    const userInfo = ObjectId.isValid(userId)
+      ? await db.collection('users').findOne(
+          { _id: new ObjectId(userId) },
+          { projection: { password: 0 } }
+        )
+      : null;
 
     // Validate source (app, web, api)
     const validSources = ['app', 'web', 'api'];
