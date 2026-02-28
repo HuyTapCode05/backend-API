@@ -18,7 +18,7 @@ export async function connectToMongoDB() {
 
     // Create indexes
     await createIndexes();
-    
+
     return true;
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
@@ -40,7 +40,7 @@ async function createIndexes() {
     try {
       const existingIndexes = await db.collection('messages').indexes();
       const textIndex = existingIndexes.find(idx => idx.textIndexVersion);
-      
+
       if (!textIndex) {
         await db.collection('messages').createIndex(
           { text: 'text', username: 'text' },
@@ -175,6 +175,24 @@ async function createIndexes() {
     try {
       await db.collection('messages').createIndex({ 'mentions.userId': 1 });
       await db.collection('messages').createIndex({ roomId: 1, 'mentions.userId': 1 });
+    } catch (e) {
+      // Index may already exist
+    }
+
+    // Stories indexes
+    try {
+      await db.collection('stories').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL auto-delete
+      await db.collection('stories').createIndex({ userId: 1, createdAt: -1 });
+      await db.collection('stories').createIndex({ expiresAt: 1, userId: 1 });
+    } catch (e) {
+      // Index may already exist
+    }
+
+    // Activity logs indexes
+    try {
+      await db.collection('activity_logs').createIndex({ userId: 1, createdAt: -1 });
+      await db.collection('activity_logs').createIndex({ userId: 1, action: 1 });
+      await db.collection('activity_logs').createIndex({ createdAt: 1 }, { expireAfterSeconds: 7776000 }); // 90 days TTL
     } catch (e) {
       // Index may already exist
     }

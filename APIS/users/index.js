@@ -9,6 +9,7 @@ import pinRoutes from './pin.js';
 import hiddenRoomsRoutes from './hiddenRooms.js';
 import settingsRoutes from './settings.js';
 import devicesRoutes from './devices.js';
+import activityLogRoutes from './activityLog.js';
 
 const router = express.Router();
 
@@ -21,6 +22,7 @@ router.use('/', pinRoutes);
 router.use('/', hiddenRoomsRoutes);
 router.use('/', settingsRoutes);
 router.use('/', devicesRoutes);
+router.use('/', activityLogRoutes);
 
 export default router;
 

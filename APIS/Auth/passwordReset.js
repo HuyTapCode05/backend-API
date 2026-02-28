@@ -6,6 +6,7 @@ import { getDB } from '../../config/database.js';
 import { sendPasswordResetEmail } from '../../config/email.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 import rateLimit from 'express-rate-limit';
+import { logActivity } from '../users/activityLog.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -74,9 +75,9 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
       console.warn('⚠️  Email not sent, reset code included in response for testing');
     }
 
-    return sendSuccess(res, responseData, 
-      emailSent 
-        ? 'If email exists, password reset code has been sent to your email.' 
+    return sendSuccess(res, responseData,
+      emailSent
+        ? 'If email exists, password reset code has been sent to your email.'
         : 'If email exists, password reset link has been sent. (Email service not configured)');
   } catch (error) {
     console.error('Forgot password error:', error);
@@ -142,7 +143,7 @@ router.post('/reset-password', authLimiter, async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     const targetUserId = new ObjectId(userId || resetRecord.userId);
-    
+
     await db.collection('users').updateOne(
       { _id: targetUserId },
       { $set: { password: hashedPassword } }
@@ -151,6 +152,12 @@ router.post('/reset-password', authLimiter, async (req, res) => {
     await db.collection('refresh_tokens').deleteMany({ userId: targetUserId });
 
     await db.collection('password_resets').deleteOne({ _id: resetRecord._id });
+
+    // Log password reset activity (non-blocking)
+    logActivity(targetUserId.toString(), 'password_reset', {
+      ip: req.ip || req.connection?.remoteAddress,
+      userAgent: req.headers['user-agent']
+    }).catch(() => { });
 
     return sendSuccess(res, null, 'Password reset successfully. All sessions have been invalidated.');
   } catch (error) {

@@ -393,6 +393,108 @@ POST /api/groups/:groupId/members/:userId/demote
 Authorization: Bearer {accessToken}
 ```
 
+### Stories
+
+#### Create Story
+```http
+POST /api/stories
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "type": "text",
+  "content": "Hello everyone! 🎉",
+  "backgroundColor": "#1a1a2e"
+}
+```
+
+Hoặc image story:
+```json
+{
+  "type": "image",
+  "content": "/Uploads/Images/Chat/story-image.jpg"
+}
+```
+
+#### Get Stories Feed (từ friends)
+```http
+GET /api/stories/feed
+Authorization: Bearer {accessToken}
+```
+
+#### Get My Stories
+```http
+GET /api/stories/me
+Authorization: Bearer {accessToken}
+```
+
+#### Get User Stories
+```http
+GET /api/stories/user/:userId
+Authorization: Bearer {accessToken}
+```
+
+#### Delete Story
+```http
+DELETE /api/stories/:storyId
+Authorization: Bearer {accessToken}
+```
+
+#### View Story
+```http
+POST /api/stories/:storyId/view
+Authorization: Bearer {accessToken}
+```
+
+#### Get Story Viewers (owner only)
+```http
+GET /api/stories/:storyId/viewers
+Authorization: Bearer {accessToken}
+```
+
+#### React to Story
+```http
+POST /api/stories/:storyId/react
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "emoji": "❤️"
+}
+```
+
+#### Get Story Reactions
+```http
+GET /api/stories/:storyId/reactions
+Authorization: Bearer {accessToken}
+```
+
+### Media Gallery
+
+#### Get Room Media
+```http
+GET /api/message/room/:roomId/media?type=image|video|voice|all&limit=50&skip=0
+Authorization: Bearer {accessToken}
+```
+
+Query Parameters:
+- `type` (optional): `image`, `video`, `voice`, `sticker`, `file`, `all` (default: all)
+- `limit` (optional): Number of results (default: 50, max: 100)
+- `skip` (optional): Pagination offset (default: 0)
+
+### Activity Log
+
+#### Get Activity Log
+```http
+GET /api/users/activity-log?limit=50&skip=0&type=login
+Authorization: Bearer {accessToken}
+```
+
+Query Parameters:
+- `type` (optional): `login`, `logout`, `password_change`, `password_reset`, `device_login`, `email_verified`, `block_user`, `unblock_user`
+- `limit` (optional): Number of results (default: 50, max: 100)
+- `skip` (optional): Pagination offset (default: 0)
+
 ## 🔌 WebSocket API
 
 ### Connection

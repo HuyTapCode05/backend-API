@@ -20,6 +20,7 @@ import recallRoutes from './recall.js';
 import draftsRoutes from './drafts.js';
 import scheduleRoutes from './schedule.js';
 import exportRoutes from './export.js';
+import galleryRoutes from './gallery.js';
 
 const router = express.Router();
 
@@ -44,6 +45,7 @@ router.use('/', recallRoutes);
 router.use('/', draftsRoutes);
 router.use('/', scheduleRoutes);
 router.use('/', exportRoutes);
+router.use('/', galleryRoutes);
 
 export default router;
 

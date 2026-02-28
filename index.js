@@ -14,6 +14,7 @@ import groupsRoutes from './APIS/groups/index.js';
 import friendsRoutes from './APIS/friends/index.js';
 import notificationsRoutes from './APIS/notifications/index.js';
 import callsRoutes from './APIS/calls/index.js';
+import storiesRoutes from './APIS/stories/index.js';
 import { initWebSocket } from './config/websocket.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -221,6 +222,23 @@ app.get('/api', (req, res) => {
         getCall: 'GET /api/calls/:callId',
         getHistory: 'GET /api/calls/history'
       },
+      stories: {
+        create: 'POST /api/stories',
+        feed: 'GET /api/stories/feed',
+        myStories: 'GET /api/stories/me',
+        userStories: 'GET /api/stories/user/:userId',
+        delete: 'DELETE /api/stories/:storyId',
+        view: 'POST /api/stories/:storyId/view',
+        viewers: 'GET /api/stories/:storyId/viewers',
+        react: 'POST /api/stories/:storyId/react',
+        reactions: 'GET /api/stories/:storyId/reactions'
+      },
+      mediaGallery: {
+        getRoomMedia: 'GET /api/message/room/:roomId/media?type=image|video|voice|all&limit=50&skip=0'
+      },
+      activityLog: {
+        get: 'GET /api/users/activity-log?limit=50&skip=0&type=login|password_change|device_login'
+      },
       websocket: {
         connect: 'WS /',
         events: ['join', 'message', 'typing', 'leave', 'call_offer', 'call_answer', 'call_ice', 'call_end']
@@ -237,6 +255,7 @@ app.use('/api/groups', groupsRoutes);  // All group routes (create, list, get, u
 app.use('/api/friends', friendsRoutes);  // All friend routes (request, accept, reject, list)
 app.use('/api/notifications', notificationsRoutes);  // All notification routes (get, mark as read)
 app.use('/api/calls', callsRoutes);  // All call routes (initiate, accept, reject, end, history)   
+app.use('/api/stories', storiesRoutes);  // All story routes (create, get, delete, view, react)
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -315,7 +334,7 @@ process.on('SIGINT', async () => {
       console.log('✅ Server closed');
       process.exit(0);
     });
-    
+
     // Force close after 10 seconds
     setTimeout(() => {
       console.error('⚠️  Forcing shutdown...');
@@ -343,10 +362,10 @@ process.on('SIGTERM', async () => {
 // Global Express error handler - Must be after all routes
 app.use((err, req, res, next) => {
   console.error('❌ Express error:', err);
-  
+
   // Don't leak error details in production
   const isDevelopment = process.env.NODE_ENV !== 'production';
-  
+
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal server error',

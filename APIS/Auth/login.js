@@ -6,6 +6,7 @@ import { getDB } from '../../config/database.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
+import { logActivity } from '../users/activityLog.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -61,7 +62,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
     const userAgent = req.headers['user-agent'] || 'unknown';
     const ip = req.ip || req.connection.remoteAddress || 'unknown';
-    
+
     let deviceName = 'Unknown Device';
     let deviceType = 'unknown';
     let os = 'unknown';
@@ -156,6 +157,16 @@ router.post('/login', authLimiter, async (req, res) => {
       emailVerified: user.emailVerified,
       createdAt: user.createdAt
     };
+
+    // Log login activity (non-blocking)
+    logActivity(user._id.toString(), 'login', {
+      ip: req.ip || req.connection?.remoteAddress,
+      userAgent,
+      deviceName,
+      deviceType,
+      os,
+      browser
+    }).catch(() => { });
 
     return sendSuccess(res, {
       user: userResponse,
